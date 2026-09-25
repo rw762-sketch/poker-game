@@ -1,5 +1,5 @@
-import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=637e2d377d58';
-import { boardTexture } from './strategy.js?v=637e2d377d58';
+import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=72cf100cea79';
+import { boardTexture } from './strategy.js?v=72cf100cea79';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const deck=Array.from({length:52},(_,i)=>({r:2+i%13,s:Math.floor(i/13)}));
 const key=c=>c.s*13+c.r;
@@ -42,6 +42,19 @@ export function gtoThinkTime(obs,random=Math.random) {
   const complexity=obs.options.owed?Math.min(450,obs.options.call/Math.max(1,obs.pot)*500):0;
   return Math.round((650+random()*950+complexity)*gtoStyle(obs.seat).pace);
 }
+// Spread a fixed budget across eligible hands, with a soft blocker preference.
+// Capping each frequency retains give-ups even for the highest-priority bluff.
+export function distributeBluffs(priorities,budget) {
+  const frequencies=priorities.map(()=>0),weights=priorities.map(p=>1+.35*Math.max(0,p));
+  let remaining=Math.max(0,Math.min(budget,priorities.length*.8));
+  let active=priorities.map((_,i)=>i);
+  while(remaining>1e-10&&active.length) {
+    const total=active.reduce((s,i)=>s+weights[i],0),mass=remaining;
+    for(const i of active){const allocated=Math.min(.8-frequencies[i],mass*weights[i]/total);frequencies[i]+=allocated;remaining-=allocated;}
+    active=active.filter(i=>frequencies[i]<.8-1e-10);
+  }
+  return frequencies;
+}
 export function rangeMix(obs,bet) {
   const used=new Set(obs.board.map(key));
   const cutoff=obs.position==='late'?.31:.42;
@@ -59,10 +72,9 @@ export function rangeMix(obs,bet) {
   const budget=bluffBudget(values.length*valueFrequency,bet,obs.pot,obs.opponents,obs.board.length===5);
   const own=ranked.find(h=>same(h.cards,obs.cards));
   const bluff=candidates.find(h=>same(h.cards,obs.cards));
-  const higher=bluff?candidates.filter(h=>h.priority>bluff.priority).length:0;
-  const equal=bluff?candidates.filter(h=>h.priority===bluff.priority).length:0;
-  return {value:values.includes(own),valueFrequency,bluffFrequency:bluff?clamp((budget-higher)/equal,0,1):0,
-    valueCombinations:values.length,bluffMass:Math.min(budget,candidates.length),rangeCombinations:ranked.length};
+  const frequencies=distributeBluffs(candidates.map(h=>h.priority),budget);
+  return {value:values.includes(own),valueFrequency,bluffFrequency:bluff?frequencies[candidates.indexOf(bluff)]:0,
+    valueCombinations:values.length,bluffMass:frequencies.reduce((sum,p)=>sum+p,0),rangeCombinations:ranked.length};
 }
 export function gtoDecision(obs,random=Math.random,trials=600) {
   const o=obs.options,roll=random(),call={action:'call'},fold={action:'fold'};

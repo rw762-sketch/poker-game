@@ -1,10 +1,10 @@
-import { gtoThinkTime } from './gto.js?v=637e2d377d58';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=637e2d377d58';
-import { PlayerMemory } from './player-memory.js?v=637e2d377d58';
-import { Poker, evaluate, labels } from './engine.js?v=637e2d377d58';
-import { tableSnapshot, animateTable } from './motion.js?v=637e2d377d58';
-import { OnlineRoom } from './multiplayer.js?v=637e2d377d58';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=637e2d377d58';
+import { gtoThinkTime } from './gto.js?v=72cf100cea79';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=72cf100cea79';
+import { PlayerMemory } from './player-memory.js?v=72cf100cea79';
+import { Poker, evaluate, labels } from './engine.js?v=72cf100cea79';
+import { tableSnapshot, animateTable } from './motion.js?v=72cf100cea79';
+import { OnlineRoom } from './multiplayer.js?v=72cf100cea79';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=72cf100cea79';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -172,12 +172,6 @@ function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selec
 function renderDifficulty() {
   $('difficultyPanel').hidden = !!room;
   $('aiMemoryPanel').hidden = !!room || handDifficulty === 'gto';
-  const read=playerMemory.profile(0);
-  const samples=playerMemory.model(0).samples;
-  $('aiRead').textContent = `${read.hands} hands observed · ${read.label} · ML: ${samples} bet responses`;
-  $('aiMemoryDetail').textContent = read.hands < 8
-    ? 'Bots build a read after at least 8 completed hands. Only public actions are recorded.'
-    : `You entered ${Math.round(read.vpip*100)}% of hands voluntarily and folded to ${Math.round(read.fold*100)}% of bets faced (smoothed estimates). Medium adapts gradually; Hard makes stronger adjustments.`;
   document.querySelectorAll('input[name="difficulty"]').forEach(input => { input.checked = input.value === selectedDifficulty; });
   $('difficultyStatus').textContent = selectedDifficulty !== handDifficulty
     ? `${DIFFICULTIES[handDifficulty].name} this hand · ${DIFFICULTIES[selectedDifficulty].name} starts next hand`

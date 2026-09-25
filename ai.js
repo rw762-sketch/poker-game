@@ -1,15 +1,15 @@
-import { gtoDecision } from './gto.js?v=637e2d377d58';
-import { learnBluffPolicy } from './opponent-model.js?v=637e2d377d58';
-import { adaptStrategy } from './player-memory.js?v=637e2d377d58';
-import { evaluate } from './engine.js?v=637e2d377d58';
-import { simulateEquity } from './poker-math.js?v=637e2d377d58';
-import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=637e2d377d58';
-import { TRAINED_POLICY } from './trained-policy.js?v=637e2d377d58';
+import { gtoDecision } from './gto.js?v=72cf100cea79';
+import { learnBluffPolicy } from './opponent-model.js?v=72cf100cea79';
+import { adaptStrategy } from './player-memory.js?v=72cf100cea79';
+import { evaluate } from './engine.js?v=72cf100cea79';
+import { simulateEquity } from './poker-math.js?v=72cf100cea79';
+import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=72cf100cea79';
+import { TRAINED_POLICY } from './trained-policy.js?v=72cf100cea79';
 export const DIFFICULTIES = {
-  gto: { name:'GTO', description:'Mixed bluffs, live draws, and distinct playing styles · GTO-inspired.' },
-  easy: { name:'Easy', description:'Relaxed play. More calls, smaller bets.' },
-  medium: { name:'Medium', description:'Position-aware play with gradual player reads.' },
-  hard: { name:'Hard', description:'Learns betting responses from completed hands.' },
+  gto: { name:'GTO', description:'Expert play · GTO-inspired.' },
+  easy: { name:'Easy', description:'A relaxed table.' },
+  medium: { name:'Medium', description:'A steady challenge.' },
+  hard: { name:'Hard', description:'A tougher table.' },
 };
 export const normalizeDifficulty = value => Object.hasOwn(DIFFICULTIES, value) ? value : 'medium';
 export function botObservation(game, memory) {

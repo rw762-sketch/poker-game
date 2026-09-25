@@ -1,10 +1,9 @@
-import {Arena,BOT_NAMES} from './arena-model.js?v=637e2d377d58';
-import {tableSnapshot,animateTable} from './motion.js?v=637e2d377d58';
+import {Arena,BOT_NAMES} from './arena-model.js?v=72cf100cea79';
+import {tableSnapshot,animateTable} from './motion.js?v=72cf100cea79';
 const $=id=>document.getElementById(id), arena=new Arena();
 const colors=['#76d3b0','#e4be7a','#85b5ef','#cd9ee9'];
 const streets=['Pre-flop','Flop','Turn','River','Showdown'];
 let running=false,timer=null,selected=null,frame=null;
-const pct=n=>`${Math.round(n*100)}%`;
 function card(c,hidden=false){
  if(hidden)return '<div class="card back" aria-label="Hidden card"></div>';
  if(!c)return '<div class="card empty"></div>';
@@ -23,24 +22,19 @@ function render(){
  const finished=g.done&&g.players.filter(p=>p.stack>0).length<2;
  $('play').textContent=running?'Pause':'Play';$('play').disabled=finished;$('step').disabled=finished;
  $('nextHand').disabled=!g.done||finished;$('newMatch').hidden=!finished;
- $('arenaStatus').textContent=g.done?g.result+(finished?' Match complete. Start a new match to keep learning.':running?' Next hand shortly.':' Select Next hand to continue.'):`${running?'Playing':'Paused'} · ${g.players[g.turn].name} is next.`;
- $('readRows').innerHTML=g.players.map((p,i)=>{const r=arena.memory.profile(i);return `<tr><th scope="row"><span class="bot-dot" style="background:${colors[i]}"></span>${p.name}</th><td>${r.hands}</td><td>${r.label}</td><td>${p.stack.toLocaleString()}</td></tr>`;}).join('');
+ $('arenaStatus').textContent=g.done?g.result+(finished?' Match complete. Start a new match.':running?' Next hand shortly.':' Select Next hand to continue.'):`${running?'Playing':'Paused'} · ${g.players[g.turn].name} is next.`;
+ $('readRows').innerHTML=g.players.map((p,i)=>{return `<tr><th scope="row"><span class="bot-dot" style="background:${colors[i]}"></span>${p.name}</th><td>${g.hand}</td><td>${p.stack.toLocaleString()}</td></tr>`;}).join('');
  $('timeline').replaceChildren(...arena.decisions.slice().reverse().map(s=>{const li=document.createElement('li'),b=document.createElement('button'),meta=document.createElement('small');meta.textContent=`Match ${s.match} · Hand ${s.hand} · ${streets[s.street]}`;b.append(meta,`${s.name} — ${actionText(s)}`);b.setAttribute('aria-pressed',String(selected===s));b.onclick=()=>{stop();selected=s;render();};li.append(b);return li;}));
  renderDecision();renderChart();
 }
 function renderDecision(){
  $('decisionEmpty').hidden=!!selected;$('decisionContent').hidden=!selected;
  if(!selected){$('decisionTitle').textContent='Ready to observe.';return;}
- const s=selected,a=s.analysis;
+ const s=selected;
  $('decisionTitle').textContent=`${s.name} · ${actionText(s)}`;
  $('decisionContext').textContent=`Match ${s.match}, hand ${s.hand} · ${streets[s.street]} · Pot ${s.pot} · ${s.toCall} to call`;
  $('decisionCards').innerHTML=s.cards.map(c=>card(c,!$('reveal').checked)).join('');
- $('decisionEquity').textContent=a.equity===null?'Opening-hand rule':`${pct(a.equity)} · ${a.trials} samples`;
- $('decisionPrice').textContent=pct(a.price);$('decisionPosition').textContent=a.position;
- const ml=a.machineLearning;
- $('decisionReason').textContent=a.reason+(ml ? ` ML estimates ${Math.round(ml.fold*100)}% folds to a nearby bet size (${ml.samples} training responses; ${ml.similar} similar situations). ${ml.confidence?'A bounded adjustment is applied to bluff frequency.':'Still gathering examples; no ML adjustment.'}` : '');
- $('decisionReads').replaceChildren(...s.opponents.map((name,i)=>{const li=document.createElement('li'),r=a.reads[i];li.textContent=`${name}: ${r.label.toLowerCase()} · ${r.hands} observed hands · assumed ${a.ranges[i]} range`;return li;}));
- $('decisionPolicy').textContent=`Sizing parameter: ${pct(a.policy.size)} of pot after calling. Selective bluff threshold: ${pct(a.policy.bluff)}. These apply only when the corresponding strategy conditions are met.`;
+
 }
 function renderChart(){
  const data=arena.history,w=480,h=180,left=35,right=12,top=14,bottom=28,max=Math.max(1200,...data.flatMap(x=>x.stacks));

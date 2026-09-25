@@ -77,3 +77,17 @@ test('continuation trace lowers weak river barrel frequency instead of auto-bluf
  assert.equal(second.analysis.continuing,true);
  assert.ok(second.analysis.raiseFrequency<=first.analysis.raiseFrequency);
 });
+
+import {distributeBluffs} from '../gto.js';
+test('bluff randomization preserves its budget and keeps every eligible hand mixed',()=>{
+ const frequencies=distributeBluffs([0,1,4,8],2);
+ assert.ok(Math.abs(frequencies.reduce((a,b)=>a+b,0)-2)<1e-9);
+ assert.ok(frequencies.every(p=>p>0&&p<=.8));
+ assert.ok(frequencies[3]>=frequencies[0]);
+ assert.deepEqual(distributeBluffs([0,4],0),[0,0]);
+ assert.deepEqual(distributeBluffs([],4),[]);
+ assert.ok(distributeBluffs([0,4],10).every(p=>p===.8));
+ const rng=seededRandom(543),p=frequencies[1];let count=0;
+ for(let i=0;i<10000;i++)if(rng()<p)count++;
+ assert.ok(Math.abs(count/10000-p)<.025);
+});
