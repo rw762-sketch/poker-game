@@ -14,3 +14,7 @@ Implemented:
 Limits: coarse assumed ranges, no full action-conditioned range propagation, no game-tree solution or equilibrium computation, approximate equity realization on earlier streets, no convergence or exploitability guarantee. GTO-inspired should not be interpreted as stronger than Hard in all matchups.
 
 Verification: deterministic opening/mixing/budget tests, free-check and all-in defenses, independence from exploit profiles, no hidden-card observation, and legal complete-game/chip-conservation tests.
+
+## Humanized bluffing update
+
+Seat personalities make small changes to value-bet frequency and public-state sizing; strong checks remain in every style. A shared sizing distribution is used for value and bluffs. Live draws may semi-bluff up to 65% estimated equity, fixing the former blanket 40% cutoff. Limited draw raises can precede an otherwise losing call/fold decision. Own public betting history informs later-street continuation, with weak unblocked river hands giving up more often. Bluff attempts are currently restricted to heads-up pots with an opponent able to respond. Timing depends on public price/seat and independent randomness, never private hand strength. These are heuristic additions, not solver training or evidence of equilibrium convergence.

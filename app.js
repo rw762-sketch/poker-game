@@ -1,9 +1,10 @@
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e41832293449';
-import { PlayerMemory } from './player-memory.js?v=e41832293449';
-import { Poker, evaluate, labels } from './engine.js?v=e41832293449';
-import { tableSnapshot, animateTable } from './motion.js?v=e41832293449';
-import { OnlineRoom } from './multiplayer.js?v=e41832293449';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e41832293449';
+import { gtoThinkTime } from './gto.js?v=637e2d377d58';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=637e2d377d58';
+import { PlayerMemory } from './player-memory.js?v=637e2d377d58';
+import { Poker, evaluate, labels } from './engine.js?v=637e2d377d58';
+import { tableSnapshot, animateTable } from './motion.js?v=637e2d377d58';
+import { OnlineRoom } from './multiplayer.js?v=637e2d377d58';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=637e2d377d58';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -165,7 +166,7 @@ function schedule() {
     if (room) return;
     const decision = chooseBotAction(botObservation(game, playerMemory), handDifficulty);
     act(decision.action, decision.amount);
-  }, 850 + Math.random() * 650);
+  }, handDifficulty === 'gto' ? gtoThinkTime({seat:game.turn,options:game.options(),pot:game.pot}) : 850 + Math.random() * 650);
 }
 function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selectedDifficulty; game.start(); playerMemory.begin(game); if(game.done){playerMemory.finish();savePlayerMemory();} render(); schedule(); }
 function renderDifficulty() {

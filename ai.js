@@ -1,12 +1,12 @@
-import { gtoDecision } from './gto.js?v=e41832293449';
-import { learnBluffPolicy } from './opponent-model.js?v=e41832293449';
-import { adaptStrategy } from './player-memory.js?v=e41832293449';
-import { evaluate } from './engine.js?v=e41832293449';
-import { simulateEquity } from './poker-math.js?v=e41832293449';
-import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=e41832293449';
-import { TRAINED_POLICY } from './trained-policy.js?v=e41832293449';
+import { gtoDecision } from './gto.js?v=637e2d377d58';
+import { learnBluffPolicy } from './opponent-model.js?v=637e2d377d58';
+import { adaptStrategy } from './player-memory.js?v=637e2d377d58';
+import { evaluate } from './engine.js?v=637e2d377d58';
+import { simulateEquity } from './poker-math.js?v=637e2d377d58';
+import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=637e2d377d58';
+import { TRAINED_POLICY } from './trained-policy.js?v=637e2d377d58';
 export const DIFFICULTIES = {
-  gto: { name:'GTO', description:'Balanced mixed strategy · GTO-inspired approximation.' },
+  gto: { name:'GTO', description:'Mixed bluffs, live draws, and distinct playing styles · GTO-inspired.' },
   easy: { name:'Easy', description:'Relaxed play. More calls, smaller bets.' },
   medium: { name:'Medium', description:'Position-aware play with gradual player reads.' },
   hard: { name:'Hard', description:'Learns betting responses from completed hands.' },
@@ -27,7 +27,7 @@ export function botObservation(game, memory) {
       predictions[fraction]={...memory.predictFold(seats[0],context),riskFraction:added/Math.max(1,obs.pot),fraction};
     }
   }
-  return {...obs,seat:game.turn,foldPredictions:predictions,opponentProfiles:seats.map(i=>memory.profile(i)),opponentLines:seats.map(i=>memory.line(i))};
+  return {...obs,seat:game.turn,selfLine:memory.line(game.turn),foldPredictions:predictions,opponentProfiles:seats.map(i=>memory.profile(i)),opponentLines:seats.map(i=>memory.line(i))};
 }
 export function estimateEquity(observation, trials, random = Math.random) {
   return simulateEquity(observation, trials, random).equity;

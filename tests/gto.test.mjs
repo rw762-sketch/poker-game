@@ -44,3 +44,36 @@ test('GTO completes seeded full games with legal bets and conserved chips',()=>{
   assert.ok(g.done);assert.equal(g.players.reduce((s,p)=>s+p.stack,0),4000);
  }
 });
+
+import {gtoStyle,gtoThinkTime} from '../gto.js';
+const withRoll=roll=>{const rng=seededRandom(73);let first=true;return ()=>{if(first){first=false;return roll;}return rng();};};
+test('live draws can semi-bluff above the old 40-percent equity ceiling and also check',()=>{
+ const draw={...obs,cards:cards('Qs Js'),board:cards('Ts 9d 2s'),seat:2};
+ const bet=gtoDecision(draw,withRoll(.001),400),check=gtoDecision(draw,withRoll(.999),400);
+ assert.ok(bet.analysis.equity>.4);assert.equal(bet.analysis.bluffKind,'semi-bluff');
+ assert.ok(bet.analysis.raiseFrequency>0&&bet.analysis.raiseFrequency<1);
+ assert.equal(bet.action,'raise');assert.equal(check.action,'call');
+});
+test('no bluffs into an all-in player or multiple opponents',()=>{
+ const draw={...obs,cards:cards('Qs Js'),board:cards('Ts 9d 2s'),seat:2};
+ const allin=gtoDecision({...draw,effectiveStack:0},withRoll(.001),100);
+ assert.equal(allin.analysis.bluffKind,null);
+ const multi=gtoDecision({...draw,opponents:3,opponentRanges:['standard','standard','standard']},withRoll(.001),100);
+ assert.equal(multi.analysis.bluffKind,null);
+});
+test('personalities keep protected strong checks and timing is independent of cards',()=>{
+ for(let seat=0;seat<4;seat++){
+  const style=gtoStyle(seat);assert.ok(style.valueFrequency>.65&&style.valueFrequency<.9);
+  assert.equal(gtoDecision({...obs,seat},withRoll(.999),30).action,'call');
+  const weak={...obs,seat,cards:cards('4h 5c')};
+  assert.equal(gtoThinkTime({...obs,seat},()=>.4),gtoThinkTime(weak,()=>.4));
+ }
+ assert.notEqual(gtoStyle(1).name,gtoStyle(2).name);
+});
+test('continuation trace lowers weak river barrel frequency instead of auto-bluffing',()=>{
+ const river={...obs,cards:cards('6h 5c'),board:cards('2s 9d Jh Qc As'),seat:2};
+ const first=gtoDecision(river,withRoll(.001),100);
+ const second=gtoDecision({...river,selfLine:[{type:'raise',street:2}]},withRoll(.001),100);
+ assert.equal(second.analysis.continuing,true);
+ assert.ok(second.analysis.raiseFrequency<=first.analysis.raiseFrequency);
+});
