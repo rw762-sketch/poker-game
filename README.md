@@ -59,3 +59,11 @@ Strategy references (read and implemented as project-specific heuristics):
 - [Starting hands and position](https://www.pokerstars.com/poker/learn/lesson/poker-starting-hands/)
 - [Thinking about hand ranges](https://www.pokerstars.com/poker/learn/strategies/how-to-think-about-hand-ranges-in-poker/)
 - [Stack-to-pot ratio](https://www.pokerstars.com/poker/learn/lesson/introduction-to-stack-to-pot-ratio-spr/)
+
+## Relay setup and connection errors
+
+The bundled PeerJS 1.5.5 default TURN hostnames did not resolve during the September 24 connection investigation. The game now overrides those defaults with an explicit STUN configuration. This supports direct connections, but **does not solve restrictive NAT/firewall connections by itself**. Two tabs on one computer successfully joined the live room; that is not a cross-network test.
+
+`network-config.js` exposes `TURN_CREDENTIALS_URL` for a deployed HTTPS endpoint returning a JSON array of short-lived `RTCIceServer` objects. Configure an active TURN service, including TCP/TLS on port 443 where supported, expose its temporary credentials through that endpoint with CORS for this site's origin, and set the URL before publishing. Keep the provider's account/API secret on the endpoint's server, never in this public repository. Both host and guests must reload and create a new room after configuration changes. Browser requests use `no-store`; invalid or unavailable relay configuration fails explicitly.
+
+Until a working relay is configured, try both devices on the same Wi-Fi or another network, keep the host tab open, and use a newly created room. No guaranteed cross-network support is claimed. A missing room now rejects promptly with the room-not-found message instead of being replaced by a generic timeout.

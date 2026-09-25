@@ -1,4 +1,5 @@
-import { HostTable } from './room-state.js?v=fc2f7b054864';
+import { peerConfiguration } from './network-config.js?v=93aeb1e0dca8';
+import { HostTable } from './room-state.js?v=93aeb1e0dca8';
 const PREFIX = 'river-room-v1-';
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let loading;
@@ -6,7 +7,7 @@ function loadPeer() {
   if (window.Peer) return Promise.resolve(window.Peer);
   if (!loading) loading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=fc2f7b054864', import.meta.url).href;
+    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=93aeb1e0dca8', import.meta.url).href;
     script.onload = () => window.Peer ? resolve(window.Peer) : reject(Error('Multiplayer could not load.'));
     script.onerror = () => { loading = null; script.remove(); reject(Error('Multiplayer could not load. Check your connection and try again.')); };
     document.head.append(script);
@@ -24,10 +25,11 @@ function sessionToken(room) {
     return token;
   } catch { return crypto.randomUUID(); }
 }
-function networkMessage(error) {
+export function networkMessage(error) {
   if (error?.type === 'peer-unavailable') return 'Room not found. Check the code and make sure the host has the game open.';
   if (error?.type === 'unavailable-id') return 'That room code is busy. Create a room again.';
-  return 'Connection unavailable. Check your internet connection, or try another network.';
+  if (error?.type === 'webrtc') return 'The browser connection to the host failed. Keep both tabs open and try the same Wi-Fi or a mobile hotspot. This network may need a relay.';
+  return 'Room discovery is unavailable. Check your internet connection and try again.';
 }
 
 export class OnlineRoom {
@@ -48,7 +50,9 @@ export class OnlineRoom {
   async openPeer(id) {
     const Peer = await loadPeer();
     if (this.closed) throw Error('Room closed.');
-    this.peer = new Peer(id, { debug: 0, secure: true });
+    const config = await peerConfiguration();
+    if (this.closed) throw Error('Room closed.');
+    this.peer = new Peer(id, { debug: 0, secure: true, config });
     this.peer.on('disconnected', () => {
       if (this.closed) return;
       this.onStatus('Room discovery disconnected. Existing players can keep playing.');
@@ -98,15 +102,26 @@ export class OnlineRoom {
     }, 3000);
   }
   async connectToHost() {
-    this.connection?.close();
+    const previous = this.connection;
+    this.connection = null;
+    previous?.close();
     const connection = this.peer.connect(PREFIX + this.code, { reliable: true, serialization: 'json' });
     this.connection = connection;
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(Error('Could not join. Keep the host tab open; try another network if this continues.'));
+      const peerError = error => {
+        if (admitted || this.connection !== connection) return;
+        cleanup();
+        reject(Error(networkMessage(error)));
         connection.close();
-      }, 20000);
+      };
+      const cleanup = () => { clearTimeout(timeout); this.peer.off('error', peerError); };
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(Error('The host did not respond. Keep its tab open and check the room code. If both tabs are open, try the same Wi-Fi or a mobile hotspot.'));
+        connection.close();
+      }, 30000);
       let admitted = false;
+      this.peer.on('error', peerError);
       connection.on('open', () => this.send(connection, { type: 'join', name: this.name, token: this.token }));
       connection.on('data', message => {
         if (this.closed || this.connection !== connection || !message || typeof message !== 'object') return;
@@ -119,25 +134,25 @@ export class OnlineRoom {
           admitted = true;
           this.connected = true;
           this.me = message.state.me;
-          clearTimeout(timeout);
+          cleanup();
           this.apply(message.state);
           resolve();
         } else if (message.type === 'error') {
           const error = typeof message.message === 'string' ? message.message.slice(0, 200) : 'Action rejected.';
-          if (!admitted) { clearTimeout(timeout); reject(Error(error)); }
+          if (!admitted) { cleanup(); reject(Error(error)); }
           else this.onError(error);
         }
       });
       connection.on('close', () => {
-        clearTimeout(timeout);
+        cleanup();
         if (this.closed || this.connection !== connection) return;
         this.connected = false;
         this.onStatus('The host disconnected. Reconnect if the room is still open.');
         if (!admitted) reject(Error('The room closed before you joined.'));
       });
-      connection.on('error', () => {
-        clearTimeout(timeout);
-        if (!admitted) reject(Error('Could not connect to the host. Try another network.'));
+      connection.on('error', error => {
+        cleanup();
+        if (!admitted) reject(Error(networkMessage({ type:'webrtc', ...error })));
         else { this.connected = false; this.onStatus('Connection lost. Reconnect to reclaim your seat.'); }
       });
     });
