@@ -1,13 +1,292 @@
-import{Poker,evaluate,labels}from './engine.js';
-import{tableSnapshot,animateTable}from './motion.js';
-let lastFrame=null;
-function render(){renderTable();const nextFrame=tableSnapshot(game);animateTable(lastFrame,nextFrame);lastFrame=nextFrame;}
-let game=new Poker(),timer=null;const $=id=>document.getElementById(id),suits=['♠','♥','♣','♦'];
-function card(c,hidden=false){if(hidden)return'<div class="card back" aria-label="Face-down card"></div>';if(!c)return'<div class="card empty"></div>';let r=({11:'J',12:'Q',13:'K',14:'A'})[c.r]||c.r;return`<div class="card ${c.s%2?'red':''}" aria-label="${r} ${['spades','hearts','clubs','diamonds'][c.s]}"><span>${r}</span><span class="suit">${suits[c.s]}</span></div>`;}
-function renderTable(){ $('pot').textContent=game.pot.toLocaleString();$('handNo').textContent=`HAND ${String(game.hand).padStart(2,'0')}`;$('board').innerHTML=Array.from({length:5},(_,i)=>card(game.board[i])).join('');$('street').textContent=game.done?'HAND COMPLETE':['PRE-FLOP','FLOP','TURN','RIVER'][game.stage];$('seats').innerHTML=game.players.map((p,i)=>`<div class="seat seat-${i} ${!game.done&&game.turn===i?'active':''} ${p.folded?'folded':''}">${i?`<div class="avatar">${p.name[0]}</div>`:''}<div class="cards">${p.cards.map(c=>card(c,i!==0&&!(game.done&&game.stage===4&&!p.folded))).join('')}</div><div class="nameplate"><div class="player-name">${p.name}${game.dealer===i?'<span class="badge" title="Dealer">D</span>':''}</div><div class="stack">${p.stack.toLocaleString()}</div></div><div class="player-action">${p.action||' '}</div></div>`).join('');$('log').innerHTML=game.logs.map(l=>`<li>${l}</li>`).join('');const p=game.players[0];$('handName').textContent=game.board.length>=3&&!p.folded?labels[evaluate([...p.cards,...game.board])[0]]:'Your two cards are private.';const actions=$('actions');actions.innerHTML='';if(game.done){$('turnTitle').textContent='THE RESULT';$('status').textContent=game.result;const can=game.players[0].stack>0&&game.players.filter(p=>p.stack>0).length>1;button(can?'Next hand':'Play again',()=>{if(!can)game=new Poker();start();},'primary');}else if(game.turn===0){let o=game.options();$('turnTitle').textContent='YOUR MOVE';$('status').textContent=o.owed?`${o.call} chips to call. What’s your play?`:'Check or make your move.';button('Fold',()=>act('fold'),'fold');button(o.owed?`Call ${o.call}`:'Check',()=>act('call'));if(o.canRaise){let amount=o.min;const b=button(`Raise to ${amount}`,()=>act('raise',amount),'primary');const label=document.createElement('label');label.className='raise-control';label.textContent='Raise to ';const input=document.createElement('input');input.type='range';input.min=o.min;input.max=o.max;input.step=1;input.value=amount;input.setAttribute('aria-label','Raise total');const output=document.createElement('output');output.textContent=amount;input.oninput=()=>{amount=+input.value;output.textContent=amount;b.textContent=amount===o.max?`All in ${amount}`:`Raise to ${amount}`;};label.append(input,output);actions.append(label);}}else{$('turnTitle').textContent=p.folded?'WATCHING THE HAND':'AT THE TABLE';$('status').textContent=`${game.players[game.turn].name} is thinking…`;}}
-function button(text,handler,cls=''){const b=document.createElement('button');b.textContent=text;b.className=cls;b.onclick=handler;$('actions').append(b);return b;}
-function act(type,amount){if(game.act(type,amount)){render();schedule();}}
-function schedule(){clearTimeout(timer);if(game.done||game.turn===0)return;timer=setTimeout(()=>{const p=game.players[game.turn],o=game.options(),r=Math.random();let strength=game.board.length?evaluate([...p.cards,...game.board])[0]/8:(p.cards[0].r===p.cards[1].r?.65:(p.cards[0].r+p.cards[1].r)/42);if(o.owed>0&&r<Math.max(.06,.35-strength)&&o.owed>20)act('fold');else if(o.canRaise&&r>.88-strength*.2){let amount=Math.min(o.max,Math.max(o.min,game.current+Math.max(20,Math.round(game.pot*.4/10)*10)));act('raise',amount);}else act('call');},850+Math.random()*650);}
-function start(){clearTimeout(timer);lastFrame=null;game.start();render();schedule();}
-$('help').onclick=()=>$('rules').showModal();$('closeHelp').onclick=()=>$('rules').close();$('rules').addEventListener('click',e=>{if(e.target===$('rules')){let r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});$('restart').onclick=()=>{if(confirm('Start a new table with 1,000 chips each?')){clearTimeout(timer);game=new Poker();start();}};start();
-const context=document.modelContext;if(context?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});const state=()=>({hand:game.hand,done:game.done,turn:game.done?null:game.players[game.turn].name,board:game.board,holeCards:game.players[0].cards,players:game.players.map(p=>({name:p.name,stack:p.stack,folded:p.folded,bet:p.bet})),pot:game.pot,options:game.turn===0&&!game.done?game.options():null,result:game.done?game.result:null});for(const tool of[{name:'read_poker_table',description:'Read public table state and your own private cards.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>state()},{name:'play_poker_action',description:'Fold, call or check, or raise on your turn using play chips.',inputSchema:{type:'object',properties:{action:{type:'string',enum:['fold','call','raise']},amount:{type:'integer'}},required:['action'],additionalProperties:false},annotations:{readOnlyHint:false},execute:input=>{if(!input||game.done||game.turn!==0)throw Error('It is not your turn.');if(!game.act(input.action,input.amount))throw Error('Invalid poker action.');render();schedule();return state();}},{name:'deal_next_hand',description:'Deal the next hand after the current hand ends.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},execute:()=>{if(!game.done||game.players[0].stack===0||game.players.filter(p=>p.stack>0).length<2)throw Error('A next hand is not available.');start();return state();}}]){try{Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}}}
+import { Poker, evaluate, labels } from './engine.js';
+import { tableSnapshot, animateTable } from './motion.js';
+import { OnlineRoom } from './multiplayer.js';
+
+const $ = id => document.getElementById(id);
+const suits = ['♠', '♥', '♣', '♦'];
+const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+let game = new Poker();
+let timer = null;
+let room = null;
+let lastFrame = null;
+let pendingAction = false;
+let pendingTimer = null;
+let connectionMessage = '';
+
+function card(c, hidden = false) {
+  if (hidden) return '<div class="card back" aria-label="Face-down card"></div>';
+  if (!c) return '<div class="card empty"></div>';
+  const rank = ({ 11:'J', 12:'Q', 13:'K', 14:'A' })[c.r] || c.r;
+  return `<div class="card ${c.s % 2 ? 'red' : ''}" aria-label="${rank} ${['spades','hearts','clubs','diamonds'][c.s]}"><span>${rank}</span><span class="suit">${suits[c.s]}</span></div>`;
+}
+function view() {
+  if (!room?.view) return game;
+  const v = room.view;
+  const relative = seat => seat < 0 ? -1 : (seat - v.me + 4) % 4;
+  return { ...v, turn: relative(v.turn), dealer: relative(v.dealer), players: Array.from({ length:4 }, (_, i) => v.players[(i + v.me) % 4]) };
+}
+function options() { return room ? room.view?.options || {} : game.options(); }
+function render() {
+  const v = view();
+  renderTable(v);
+  const nextFrame = tableSnapshot(v);
+  animateTable(lastFrame, nextFrame);
+  lastFrame = nextFrame;
+  renderRoom();
+}
+function renderTable(v) {
+  $('pot').textContent = v.pot.toLocaleString();
+  $('handNo').textContent = `HAND ${String(v.hand).padStart(2, '0')}`;
+  $('board').innerHTML = Array.from({ length:5 }, (_, i) => card(v.board[i])).join('');
+  $('street').textContent = room && !v.started ? 'WAITING FOR FRIENDS' : v.done ? 'HAND COMPLETE' : ['PRE-FLOP','FLOP','TURN','RIVER'][v.stage];
+  $('seats').innerHTML = v.players.map((p, i) => {
+    const occupied = !room || p.occupied;
+    const name = room && i === 0 ? `${p.name} (you)` : p.name;
+    const action = !occupied ? 'Invite a friend' : room && !p.online ? 'Disconnected' : p.action;
+    return `<div class="seat seat-${i} ${!v.done && v.turn === i ? 'active' : ''} ${p.folded && v.hand ? 'folded' : ''} ${!occupied ? 'empty-seat' : ''}">
+      ${i ? `<div class="avatar">${occupied ? escape(p.name[0]) : '+'}</div>` : ''}
+      <div class="cards">${p.cards.map(c => card(c, room ? c === null : i !== 0 && !(v.done && v.stage === 4 && !p.folded))).join('')}</div>
+      <div class="nameplate"><div class="player-name">${escape(name)}${v.dealer === i ? '<span class="badge" title="Dealer">D</span>' : ''}</div><div class="stack">${occupied ? p.stack.toLocaleString() : '—'}</div></div>
+      <div class="player-action">${escape(action || ' ')}</div></div>`;
+  }).join('');
+  $('log').innerHTML = v.logs.map(line => `<li>${escape(line)}</li>`).join('');
+  const player = v.players[0];
+  $('handName').textContent = v.board.length >= 3 && !player.folded && player.cards.length === 2
+    ? labels[evaluate([...player.cards, ...v.board])[0]] : 'Your two cards are private.';
+  $('actions').innerHTML = '';
+  if (room && !room.connected) {
+    $('turnTitle').textContent = 'DISCONNECTED';
+    $('status').textContent = 'Reconnect to continue at this table.';
+    return;
+  }
+  if (room && !v.started) {
+    const count = v.players.filter(p => p.occupied && p.online).length;
+    $('turnTitle').textContent = 'YOUR PRIVATE TABLE';
+    $('status').textContent = room.host ? `${count} of 4 seats filled. Invite friends, then deal.` : 'You’re in. The host will deal when everyone is ready.';
+    $('handName').textContent = '2–4 players · 1,000 chips each · 45 seconds per turn';
+    if (room.host) button('Deal first hand', deal, 'primary').disabled = count < 2;
+    return;
+  }
+  if (v.done) {
+    $('turnTitle').textContent = 'THE RESULT';
+    $('status').textContent = v.result;
+    if (room) {
+      const eligible = v.players.filter(p => p.occupied && p.online && p.stack > 0).length;
+      if (room.host && eligible >= 2) button('Next hand', deal, 'primary');
+      else $('handName').textContent = eligible < 2 ? 'Need two connected players with chips. Create a new room to reset stacks.' : 'Waiting for the host to deal the next hand.';
+    } else {
+      const canContinue = player.stack > 0 && v.players.filter(p => p.stack > 0).length > 1;
+      button(canContinue ? 'Next hand' : 'Play again', () => { if (!canContinue) game = new Poker(); start(); }, 'primary');
+    }
+  } else if (v.turn === 0) {
+    const o = options();
+    $('turnTitle').textContent = 'YOUR MOVE';
+    $('status').textContent = o.owed ? `${o.call} chips to call. What’s your play?` : 'Check or make your move.';
+    button('Fold', () => act('fold'), 'fold');
+    button(o.owed ? `Call ${o.call}` : 'Check', () => act('call'));
+    if (o.canRaise) {
+      let amount = o.min;
+      const raise = button(`Raise to ${amount}`, () => act('raise', amount), 'primary');
+      const label = document.createElement('label');
+      label.className = 'raise-control';
+      label.textContent = 'Raise to ';
+      const input = document.createElement('input');
+      Object.assign(input, { type:'range', min:o.min, max:o.max, step:1, value:amount });
+      input.setAttribute('aria-label', 'Raise total');
+      const output = document.createElement('output');
+      output.textContent = amount;
+      input.oninput = () => {
+        amount = +input.value;
+        output.textContent = amount;
+        raise.textContent = amount === o.max ? `All in ${amount}` : `Raise to ${amount}`;
+      };
+      label.append(input, output);
+      $('actions').append(label);
+    }
+  } else {
+    $('turnTitle').textContent = player.folded ? 'WATCHING THE HAND' : 'AT THE TABLE';
+    $('status').textContent = `${v.players[v.turn].name} ${room ? 'is choosing a move' : 'is thinking'}…`;
+  }
+  if (pendingAction) $('actions').querySelectorAll('button, input').forEach(el => el.disabled = true);
+}
+function button(text, handler, className = '') {
+  const element = document.createElement('button');
+  Object.assign(element, { textContent:text, className, onclick:handler });
+  $('actions').append(element);
+  return element;
+}
+function showRoomError(message) {
+  pendingAction = false;
+  clearTimeout(pendingTimer);
+  connectionMessage = message;
+  render();
+}
+function act(action, amount) {
+  if (room) {
+    if (pendingAction) return;
+    pendingAction = true;
+    connectionMessage = '';
+    try {
+      room.action(action, amount);
+      // Host updates synchronously; guests await authoritative state.
+      if (!room.host) {
+        $('actions').querySelectorAll('button, input').forEach(el => el.disabled = true);
+        pendingTimer = setTimeout(() => showRoomError('No response yet. Check the connection before trying again.'), 8000);
+      }
+    } catch (error) { showRoomError(error.message); }
+  } else if (game.act(action, amount)) { render(); schedule(); }
+}
+function deal() {
+  if (!room) { start(); return; }
+  try { connectionMessage = ''; room.deal(); } catch (error) { showRoomError(error.message); }
+}
+function schedule() {
+  clearTimeout(timer);
+  if (room || game.done || game.turn === 0 || $('multiplayerDialog').open) return;
+  timer = setTimeout(() => {
+    if (room) return;
+    const player = game.players[game.turn], o = game.options(), random = Math.random();
+    const strength = game.board.length ? evaluate([...player.cards, ...game.board])[0] / 8
+      : player.cards[0].r === player.cards[1].r ? .65 : (player.cards[0].r + player.cards[1].r) / 42;
+    if (o.owed > 20 && random < Math.max(.06, .35 - strength)) act('fold');
+    else if (o.canRaise && random > .88 - strength * .2) act('raise', Math.min(o.max, Math.max(o.min, game.current + Math.max(20, Math.round(game.pot * .4 / 10) * 10))));
+    else act('call');
+  }, 850 + Math.random() * 650);
+}
+function start() { clearTimeout(timer); lastFrame = null; game.start(); render(); schedule(); }
+function renderRoom() {
+  $('roomBar').hidden = !room?.view;
+  $('restart').textContent = room ? 'Leave room' : 'New table';
+  $('multiplayer').hidden = !!room;
+  $('roomCode').textContent = room?.code || '';
+  $('roomMessage').textContent = connectionMessage || (room?.host ? 'You’re the host. Keep this tab open.' : 'Connected to your friends.');
+  $('reconnect').hidden = !room || room.host || room.connected;
+  $('turnClock').hidden = !room?.view?.deadline || room.view.done;
+  updateClock();
+}
+function updateClock() {
+  if (!room?.view?.deadline || room.view.done) return;
+  $('turnClock').textContent = `${Math.max(0, Math.ceil((room.view.deadline - Date.now()) / 1000))}s to act`;
+}
+setInterval(updateClock, 1000);
+
+$('help').onclick = () => $('rules').showModal();
+$('closeHelp').onclick = () => $('rules').close();
+$('multiplayer').onclick = () => { clearTimeout(timer); $('multiplayerDialog').showModal(); };
+function cancelLobby() {
+  if (room && !room.view) { const pending = room; room = null; pending.close(); lastFrame = null; render(); }
+  $('multiplayerDialog').close();
+}
+$('closeMultiplayer').onclick = cancelLobby;
+$('multiplayerDialog').addEventListener('cancel', event => { event.preventDefault(); cancelLobby(); });
+$('multiplayerDialog').addEventListener('close', () => { if (!room) schedule(); });
+$('multiplayerForm').onsubmit = async event => {
+  event.preventDefault();
+  if (room) return;
+  const name = $('nickname').value.trim();
+  if (!name) { $('nickname').focus(); return; }
+  const create = event.submitter?.id === 'createRoom';
+  const code = $('joinCode').value.trim();
+  if (!create && !code) { $('lobbyError').textContent = 'Enter the room code your friend shared.'; $('joinCode').focus(); return; }
+  $('lobbyError').textContent = create ? 'Opening your table…' : 'Connecting to your friend…';
+  $('createRoom').disabled = $('joinRoom').disabled = true;
+  clearTimeout(timer);
+  const session = new OnlineRoom({
+    onState: () => {
+      if (room !== session) return;
+      pendingAction = false;
+      clearTimeout(pendingTimer);
+      render();
+    },
+    onStatus: message => { if (room === session) { if (!session.view) { $('lobbyError').textContent = message; return; } connectionMessage = message; render(); } },
+    onError: message => { if (room === session) { if (!session.view) $('lobbyError').textContent = message; else showRoomError(message); } },
+  });
+  room = session;
+  lastFrame = null;
+  connectionMessage = '';
+  try {
+    if (create) await session.create(name);
+    else await session.join(name, code);
+    if (room !== session) return;
+    $('multiplayerDialog').close();
+    $('lobbyError').textContent = '';
+    renderRoom();
+  } catch (error) {
+    if (room !== session) return;
+    session.close();
+    room = null;
+    lastFrame = null;
+    $('lobbyError').textContent = error.message;
+    render();
+    schedule();
+  } finally { $('createRoom').disabled = $('joinRoom').disabled = false; }
+};
+$('copyInvite').onclick = async () => {
+  if (!room) return;
+  const url = new URL(location.href);
+  url.hash = `room=${room.code}`;
+  try { await navigator.clipboard.writeText(url.href); connectionMessage = 'Invite link copied. Send it to your friends.'; }
+  catch { connectionMessage = `Share room code ${room.code} with your friends.`; }
+  renderRoom();
+};
+$('reconnect').onclick = async () => {
+  if (!room) return;
+  $('reconnect').disabled = true;
+  connectionMessage = 'Reconnecting…';
+  renderRoom();
+  try { await room.reconnect(); connectionMessage = ''; render(); }
+  catch (error) { showRoomError(error.message); }
+  finally { $('reconnect').disabled = false; }
+};
+$('restart').onclick = () => {
+  if (!confirm(room ? (room.host ? 'Close this room for everyone?' : 'Leave this room?') : 'Start a new table with 1,000 chips each?')) return;
+  room?.close();
+  room = null;
+  clearTimeout(pendingTimer);
+  pendingAction = false;
+  connectionMessage = '';
+  game = new Poker();
+  history.replaceState(null, '', location.pathname + location.search);
+  start();
+};
+window.addEventListener('beforeunload', event => {
+  if (room?.view) { event.preventDefault(); event.returnValue = ''; }
+});
+window.addEventListener('pagehide', () => room?.close());
+start();
+const invited = new URLSearchParams(location.hash.slice(1)).get('room');
+if (invited) {
+  $('joinCode').value = invited.slice(0, 8).toUpperCase();
+  clearTimeout(timer);
+  $('multiplayerDialog').showModal();
+}
+
+const context = document.modelContext;
+if (context?.registerTool) {
+  const lifecycle = new AbortController();
+  window.addEventListener('pagehide', () => lifecycle.abort(), { once:true });
+  const state = () => {
+    const v = view();
+    return { hand:v.hand, done:v.done, online:!!room, turn:v.done ? null : v.players[v.turn].name,
+      board:v.board, holeCards:v.players[0].cards, pot:v.pot,
+      players:v.players.map(p => ({ name:p.name, stack:p.stack, folded:p.folded, bet:p.bet })),
+      options:v.turn === 0 && !v.done ? options() : null, result:v.done ? v.result : null };
+  };
+  for (const tool of [
+    { name:'read_poker_table', description:'Read public table state and your own private cards.', inputSchema:{ type:'object', properties:{}, additionalProperties:false }, annotations:{ readOnlyHint:true }, execute:state },
+    { name:'play_poker_action', description:'Fold, call/check, or raise on your turn using play chips.', inputSchema:{ type:'object', properties:{ action:{ type:'string', enum:['fold','call','raise'] }, amount:{ type:'integer' } }, required:['action'], additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:input => {
+      const v = view();
+      if (!input || v.done || v.turn !== 0 || pendingAction) throw Error('It is not your turn.');
+      if (room) { room.action(input.action, input.amount); return { submitted:true }; }
+      if (!game.act(input.action, input.amount)) throw Error('Invalid poker action.');
+      render(); schedule(); return state();
+    } },
+    { name:'deal_next_hand', description:'Deal the next hand after the current hand ends; room host only in multiplayer.', inputSchema:{ type:'object', properties:{}, additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:() => {
+      if (room) { room.deal(); return state(); }
+      if (!game.done || !game.players[0].stack || game.players.filter(p => p.stack > 0).length < 2) throw Error('A next hand is not available.');
+      start(); return state();
+    } },
+  ]) {
+    try { Promise.resolve(context.registerTool(tool, { signal:lifecycle.signal })).catch(() => {}); } catch {}
+  }
+}

@@ -16,3 +16,34 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+[hidden] { display: none !important; }
+.multiplayer-button { border: 1px solid #bfa56b80; background: #293d2e; color: var(--gold); padding: 10px 14px; border-radius: 6px; font-size: 14px; letter-spacing: 0; }
+.room-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 16px 20px; margin-top: 22px; border: 1px solid #6c806350; border-radius: 10px; background: #1a2c23; }
+.room-bar .eyebrow { display: block; margin: 0 0 4px; font-size: 11px; }
+#roomCode { font-size: 20px; letter-spacing: 3px; color: var(--gold); }
+.room-bar button, #multiplayerForm button { padding: 10px 15px; border: 1px solid #698267; border-radius: 6px; color: var(--text); background: #263e30; min-height: 44px; }
+.room-bar p { flex: 1; min-width: 160px; margin: 0; color: var(--muted); font-size: 14px; }
+#turnClock { font-size: 14px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.empty-seat .nameplate, .empty-seat .avatar { border-style: dashed; opacity: .65; }
+#multiplayerForm { display: grid; gap: 10px; }
+#multiplayerForm label { font-size: 14px; color: var(--muted); }
+#multiplayerForm input { min-width: 0; width: 100%; border: 1px solid #698267; background: #101e18; color: var(--text); font: inherit; padding: 12px; border-radius: 6px; }
+#multiplayerForm button.primary { background: var(--gold); color: #182b22; font-weight: 700; border-color: var(--gold); }
+.join-divider { text-align: center; color: var(--muted); font-size: 13px; padding: 6px; }
+.join-row { display: flex; gap: 8px; }
+.join-row button { flex-shrink: 0; }
+#joinCode { text-transform: uppercase; letter-spacing: 1px; }
+#lobbyError { margin: 0; color: var(--gold); min-height: 24px; font-size: 14px; }
+.room-note { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 0; }
+@media(max-width:700px) {
+  header { padding: 0 12px; }
+  .header-right { gap: 7px; }
+  .header-right .pill { display: none; }
+  .multiplayer-button { font-size: 12px; padding: 8px; }
+  .brand { letter-spacing: 1px; font-size: 12px; }
+  .brand span { margin-right: 4px; }
+  .room-bar { padding: 12px; gap: 10px; }
+  .room-bar p { flex-basis: 100%; order: 4; }
+  .player-name { max-width: 130px; overflow-wrap: anywhere; }
+}
