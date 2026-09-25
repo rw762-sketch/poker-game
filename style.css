@@ -74,3 +74,6 @@
   .difficulty-title { flex-wrap: wrap; gap: 7px; }
   .difficulty-options { gap: 7px; }
 }
+.calculator-link { color: var(--gold); font-size: 14px; text-decoration: none; letter-spacing: 0; white-space: nowrap; padding: 9px 0; }
+.calculator-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media(max-width:800px) { .header-right { font-size: 0; gap: 10px; } .header-right .pill { display: none; } header { min-height: 80px; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 14px; flex-wrap: wrap; } .header-right { flex-wrap: wrap; } .calculator-link { font-size: 13px; } }

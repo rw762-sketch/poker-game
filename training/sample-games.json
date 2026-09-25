@@ -1,0 +1,1363 @@
+[
+  {
+    "seed": 200000,
+    "dealer": 0,
+    "board": [
+      {
+        "r": 14,
+        "s": 0
+      },
+      {
+        "r": 14,
+        "s": 3
+      },
+      {
+        "r": 9,
+        "s": 0
+      },
+      {
+        "r": 4,
+        "s": 1
+      },
+      {
+        "r": 9,
+        "s": 1
+      }
+    ],
+    "actions": [
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 30,
+        "action": "raise",
+        "amount": 60
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 90,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 90,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 140,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 180,
+        "action": "raise",
+        "amount": 120
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 300,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 420,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 420,
+        "action": "raise",
+        "amount": 360
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 780,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 1140,
+        "action": "raise",
+        "amount": 460
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 1600,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Jules wins 2060 with full house.",
+    "heroNet": 0
+  },
+  {
+    "seed": 200001,
+    "dealer": 1,
+    "board": [
+      {
+        "r": 11,
+        "s": 3
+      },
+      {
+        "r": 4,
+        "s": 1
+      },
+      {
+        "r": 11,
+        "s": 2
+      },
+      {
+        "r": 5,
+        "s": 3
+      },
+      {
+        "r": 2,
+        "s": 0
+      }
+    ],
+    "actions": [
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 30,
+        "action": "raise",
+        "amount": 60
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 90,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 150,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 150,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 2,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 3,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 190,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "You wins 190 with one pair.",
+    "heroNet": 130
+  },
+  {
+    "seed": 200002,
+    "dealer": 2,
+    "board": [
+      {
+        "r": 6,
+        "s": 1
+      },
+      {
+        "r": 11,
+        "s": 2
+      },
+      {
+        "r": 11,
+        "s": 1
+      },
+      {
+        "r": 14,
+        "s": 0
+      },
+      {
+        "r": 7,
+        "s": 1
+      }
+    ],
+    "actions": [
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 40,
+        "action": "raise",
+        "amount": 50
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 70,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 2,
+        "pot": 100,
+        "action": "raise",
+        "amount": 70
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 170,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 240,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 3,
+        "pot": 240,
+        "action": "raise",
+        "amount": 160
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 400,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "You wins 560 with two pair.",
+    "heroNet": 280
+  },
+  {
+    "seed": 200003,
+    "dealer": 3,
+    "board": [
+      {
+        "r": 8,
+        "s": 1
+      },
+      {
+        "r": 14,
+        "s": 0
+      },
+      {
+        "r": 11,
+        "s": 0
+      },
+      {
+        "r": 12,
+        "s": 0
+      },
+      {
+        "r": 11,
+        "s": 2
+      }
+    ],
+    "actions": [
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 50,
+        "action": "raise",
+        "amount": 50
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 100,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 160,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Alex wins 160 with one pair.",
+    "heroNet": -10
+  },
+  {
+    "seed": 200004,
+    "dealer": 0,
+    "board": [
+      {
+        "r": 8,
+        "s": 3
+      },
+      {
+        "r": 7,
+        "s": 2
+      },
+      {
+        "r": 13,
+        "s": 2
+      },
+      {
+        "r": 10,
+        "s": 0
+      },
+      {
+        "r": 4,
+        "s": 1
+      }
+    ],
+    "actions": [
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 30,
+        "action": "raise",
+        "amount": 50
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 80,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 120,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 2,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 3,
+        "pot": 120,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "You wins 120 with high card.",
+    "heroNet": 70
+  },
+  {
+    "seed": 200005,
+    "dealer": 1,
+    "board": [
+      {
+        "r": 13,
+        "s": 3
+      },
+      {
+        "r": 10,
+        "s": 0
+      },
+      {
+        "r": 5,
+        "s": 3
+      },
+      {
+        "r": 11,
+        "s": 3
+      },
+      {
+        "r": 8,
+        "s": 2
+      }
+    ],
+    "actions": [
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 30,
+        "action": "raise",
+        "amount": 60
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 90,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 90,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 140,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 180,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 180,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 180,
+        "action": "raise",
+        "amount": 120
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 300,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 420,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 540,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 540,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 2,
+        "pot": 540,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 540,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 540,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 3,
+        "pot": 540,
+        "action": "raise",
+        "amount": 350
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 890,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 890,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "You wins 1240 with one pair.",
+    "heroNet": 710
+  },
+  {
+    "seed": 200006,
+    "dealer": 2,
+    "board": [
+      {
+        "r": 2,
+        "s": 2
+      },
+      {
+        "r": 3,
+        "s": 2
+      },
+      {
+        "r": 13,
+        "s": 0
+      },
+      {
+        "r": 6,
+        "s": 0
+      },
+      {
+        "r": 9,
+        "s": 3
+      }
+    ],
+    "actions": [
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 50,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 50,
+        "action": "raise",
+        "amount": 60
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 90,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 130,
+        "action": "raise",
+        "amount": 90
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 220,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 2,
+        "pot": 310,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 310,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 3,
+        "pot": 310,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 310,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Morgan wins 310 with two pair.",
+    "heroNet": -150
+  },
+  {
+    "seed": 200007,
+    "dealer": 3,
+    "board": [
+      {
+        "r": 7,
+        "s": 3
+      },
+      {
+        "r": 6,
+        "s": 3
+      },
+      {
+        "r": 2,
+        "s": 3
+      },
+      {
+        "r": 4,
+        "s": 0
+      },
+      {
+        "r": 6,
+        "s": 2
+      }
+    ],
+    "actions": [
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "raise",
+        "amount": 60
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 90,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 90,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 90,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Morgan wins 130 with two pair.",
+    "heroNet": -10
+  },
+  {
+    "seed": 200008,
+    "dealer": 0,
+    "board": [
+      {
+        "r": 7,
+        "s": 2
+      },
+      {
+        "r": 12,
+        "s": 1
+      },
+      {
+        "r": 6,
+        "s": 3
+      },
+      {
+        "r": 3,
+        "s": 2
+      },
+      {
+        "r": 2,
+        "s": 0
+      }
+    ],
+    "actions": [
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 50,
+        "action": "raise",
+        "amount": 50
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 100,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 160,
+        "action": "raise",
+        "amount": 90
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 250,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 340,
+        "action": "raise",
+        "amount": 310
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 650,
+        "action": "raise",
+        "amount": 760
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 1320,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 1,
+        "pot": 1990,
+        "action": "raise",
+        "amount": 950
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 2630,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 2820,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "You wins 3010 with one pair.",
+    "heroNet": 2010
+  },
+  {
+    "seed": 200009,
+    "dealer": 1,
+    "board": [
+      {
+        "r": 10,
+        "s": 2
+      },
+      {
+        "r": 2,
+        "s": 0
+      },
+      {
+        "r": 11,
+        "s": 3
+      },
+      {
+        "r": 14,
+        "s": 2
+      },
+      {
+        "r": 3,
+        "s": 2
+      }
+    ],
+    "actions": [
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 40,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Alex wins 40 with one pair.",
+    "heroNet": 0
+  },
+  {
+    "seed": 200010,
+    "dealer": 2,
+    "board": [
+      {
+        "r": 12,
+        "s": 2
+      },
+      {
+        "r": 8,
+        "s": 1
+      },
+      {
+        "r": 2,
+        "s": 0
+      },
+      {
+        "r": 5,
+        "s": 3
+      },
+      {
+        "r": 10,
+        "s": 0
+      }
+    ],
+    "actions": [
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 50,
+        "action": "raise",
+        "amount": 50
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 100,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 100,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 100,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 1,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 2,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 2,
+        "street": 3,
+        "pot": 130,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Jules wins 130 with one pair.",
+    "heroNet": -20
+  },
+  {
+    "seed": 200011,
+    "dealer": 3,
+    "board": [
+      {
+        "r": 14,
+        "s": 3
+      },
+      {
+        "r": 14,
+        "s": 2
+      },
+      {
+        "r": 4,
+        "s": 2
+      },
+      {
+        "r": 10,
+        "s": 2
+      },
+      {
+        "r": 14,
+        "s": 1
+      }
+    ],
+    "actions": [
+      {
+        "seat": 2,
+        "street": 0,
+        "pot": 30,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 0,
+        "pot": 30,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 0,
+        "street": 0,
+        "pot": 50,
+        "action": "fold",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 0,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 1,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 1,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 2,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 2,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 1,
+        "street": 3,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      },
+      {
+        "seat": 3,
+        "street": 3,
+        "pot": 50,
+        "action": "call",
+        "amount": null
+      }
+    ],
+    "result": "Alex wins 50 with three of a kind.",
+    "heroNet": -10
+  }
+]

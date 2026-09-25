@@ -1,4 +1,4 @@
-import { Poker } from './engine.js?v=e276c7197d58';
+import { Poker } from './engine.js?v=fc2f7b054864';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;
