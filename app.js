@@ -1,6 +1,10 @@
-import { Poker, evaluate, labels } from './engine.js';
-import { tableSnapshot, animateTable } from './motion.js';
-import { OnlineRoom } from './multiplayer.js';
+import { Poker, evaluate, labels } from './engine.js?v=e276c7197d58';
+import { tableSnapshot, animateTable } from './motion.js?v=e276c7197d58';
+import { OnlineRoom } from './multiplayer.js?v=e276c7197d58';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e276c7197d58';
+let selectedDifficulty = 'medium';
+try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
+let handDifficulty = selectedDifficulty;
 
 const $ = id => document.getElementById(id);
 const suits = ['♠', '♥', '♣', '♦'];
@@ -145,16 +149,26 @@ function schedule() {
   if (room || game.done || game.turn === 0 || $('multiplayerDialog').open) return;
   timer = setTimeout(() => {
     if (room) return;
-    const player = game.players[game.turn], o = game.options(), random = Math.random();
-    const strength = game.board.length ? evaluate([...player.cards, ...game.board])[0] / 8
-      : player.cards[0].r === player.cards[1].r ? .65 : (player.cards[0].r + player.cards[1].r) / 42;
-    if (o.owed > 20 && random < Math.max(.06, .35 - strength)) act('fold');
-    else if (o.canRaise && random > .88 - strength * .2) act('raise', Math.min(o.max, Math.max(o.min, game.current + Math.max(20, Math.round(game.pot * .4 / 10) * 10))));
-    else act('call');
+    const decision = chooseBotAction(botObservation(game), handDifficulty);
+    act(decision.action, decision.amount);
   }, 850 + Math.random() * 650);
 }
-function start() { clearTimeout(timer); lastFrame = null; game.start(); render(); schedule(); }
+function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selectedDifficulty; game.start(); render(); schedule(); }
+function renderDifficulty() {
+  $('difficultyPanel').hidden = !!room;
+  document.querySelectorAll('input[name="difficulty"]').forEach(input => { input.checked = input.value === selectedDifficulty; });
+  $('difficultyStatus').textContent = selectedDifficulty !== handDifficulty
+    ? `${DIFFICULTIES[handDifficulty].name} this hand · ${DIFFICULTIES[selectedDifficulty].name} starts next hand`
+    : `${DIFFICULTIES[selectedDifficulty].name} opponents · ${DIFFICULTIES[selectedDifficulty].description}`;
+}
+document.querySelectorAll('input[name="difficulty"]').forEach(input => input.addEventListener('change', () => {
+  if (room || !input.checked) return;
+  selectedDifficulty = normalizeDifficulty(input.value);
+  try { localStorage.setItem('river-room-difficulty', selectedDifficulty); } catch {}
+  renderDifficulty();
+}));
 function renderRoom() {
+  renderDifficulty();
   $('roomBar').hidden = !room?.view;
   $('restart').textContent = room ? 'Leave room' : 'New table';
   $('multiplayer').hidden = !!room;

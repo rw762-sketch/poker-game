@@ -23,3 +23,13 @@ The networking library is **PeerJS 1.5.5**, vendored under `vendor/` with its MI
 References: https://peerjs.com/client/getting-started and https://peerjs.com/client/faq
 
 Validation: `node --test tests/multiplayer.test.mjs` covers 2–4 seats, private-card filtering, host authority, invalid/out-of-turn/replayed actions, room capacity, reconnects, timeouts, showdown privacy, chip conservation, and an asynchronous four-client transport simulation. Actual separate-device/cross-network WebRTC behavior is not covered by those simulations.
+
+## AI difficulty and asset versions
+
+Solo play offers Easy, Medium, and Hard above the table. The preference is saved locally and applies on the next hand. Easy uses a loose, passive heuristic. Medium samples 48 possible deals and Hard samples 180, using only the bot's own cards and public cards. Hard changes bet sizing and adds occasional bluffs; these are casual practice opponents, not a poker solver.
+
+Before publishing, run `python3 scripts/version-assets.py`. It gives the HTML stylesheet and JavaScript module graph one content-derived cache version, preventing a newly added button from loading with an older cached event-handler script.
+
+Tests: `node --test tests/ai.test.mjs tests/multiplayer.test.mjs`.
+
+Browser verification: two Chrome tabs created/joined a real PeerJS room, received different private hands, synchronized a call, and completed a hand by folding. This checks live signaling and data channels on this machine, not all separate-device network combinations.

@@ -47,3 +47,30 @@
   .room-bar p { flex-basis: 100%; order: 4; }
   .player-name { max-width: 130px; overflow-wrap: anywhere; }
 }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.difficulty-panel { display: grid; grid-template-columns: 220px 1fr; gap: 12px 26px; align-items: center; padding: 20px 0 10px; margin-top: 12px; border-top: 1px solid #ffffff12; }
+.difficulty-heading .eyebrow { display: block; font-size: 11px; margin-bottom: 7px; }
+.difficulty-heading h2 { font-family: 'Playfair Display', serif; font-size: 21px; font-weight: 500; margin: 0; }
+.difficulty-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.difficulty-option { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 13px 15px; border: 1px solid #4d655260; border-radius: 9px; background: #17271f; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.difficulty-option:hover { border-color: #a6af8870; transform: translateY(-2px); }
+.difficulty-option:has(input:checked) { border-color: var(--gold); background: #e3bb7210; box-shadow: inset 0 0 0 1px #e3bb7220; }
+.difficulty-option:has(input:focus-visible) { outline: 3px solid var(--gold); outline-offset: 4px; }
+.difficulty-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.difficulty-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.difficulty-option:has(input:checked) .difficulty-title { color: var(--gold); }
+.difficulty-pips { font-size: 9px; letter-spacing: 2px; color: var(--gold); white-space: nowrap; }
+.difficulty-pips span { color: #637165; }
+.difficulty-description { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.difficulty-status { grid-column: 2; margin: 0; min-height: 20px; font-size: 13px; color: var(--muted); }
+@media(max-width:800px) {
+  .difficulty-panel { grid-template-columns: 1fr; gap: 12px; }
+  .difficulty-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; }
+  .difficulty-heading .eyebrow { margin: 0; }
+  .difficulty-heading h2 { font-size: 20px; }
+  .difficulty-status { grid-column: 1; }
+  .difficulty-option { padding: 12px 9px; }
+  .difficulty-title { flex-wrap: wrap; gap: 7px; }
+  .difficulty-options { gap: 7px; }
+}
