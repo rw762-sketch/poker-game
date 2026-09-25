@@ -187,3 +187,5 @@ dialog p { color: #b8c5ca; }
   .calculate-row { align-items: stretch; }
   .calculate-row label, .calculate-button { flex-basis: 100%; }
 }
+
+.ai-memory{margin:12px 0;color:var(--muted);font-size:13px}.ai-memory summary{font-size:13px}.ai-memory p{max-width:760px;line-height:1.6}.ai-memory button{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:13px}

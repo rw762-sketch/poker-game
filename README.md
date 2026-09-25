@@ -50,7 +50,7 @@ Simulation runs in a Web Worker and can be canceled. Duplicate cards and inconsi
 
 Run `node scripts/train-ai.mjs` from the repository root. The script searches seven strategy parameters across **5,760 complete simulated games**, then freezes the result and compares it with the previous Hard policy on **1,600 separate held-out deals per policy**. Opponents mix calling, old-policy, and positional strategies. This is parameter tuning on synthetic games, not neural-network training or human hand-history learning.
 
-The latest run earned **2.427 big blinds per hand** against that synthetic opponent mix, versus **1.048** for the old policy. The paired improvement was **1.379 BB/hand**, with an approximate 95% interval of **0.505–2.252**. These benchmark results do not establish performance against human players. See `training/report.json` for the full report and `training/sample-games.json` for 12 complete example action traces.
+The original sample-game policy run (before the later adaptive-memory layer) earned **2.427 big blinds per hand** against that synthetic opponent mix, versus **1.048** for the old policy. The paired improvement was **1.379 BB/hand**, with an approximate 95% interval of **0.505–2.252**. These benchmark results do not establish performance against human players. See `training/report.json` for the full report and `training/sample-games.json` for 12 complete example action traces.
 
 Run `node --test tests/*.test.mjs`: 21 checks cover hidden-card isolation, legal actions, chip conservation, range effects, input validation, pot-odds math, and a fast evaluator compared with exhaustive best-five evaluation on 5,000 hands, plus multiplayer regressions.
 
@@ -67,3 +67,14 @@ The bundled PeerJS 1.5.5 default TURN hostnames did not resolve during the Septe
 `network-config.js` exposes `TURN_CREDENTIALS_URL` for a deployed HTTPS endpoint returning a JSON array of short-lived `RTCIceServer` objects. Configure an active TURN service, including TCP/TLS on port 443 where supported, expose its temporary credentials through that endpoint with CORS for this site's origin, and set the URL before publishing. Keep the provider's account/API secret on the endpoint's server, never in this public repository. Both host and guests must reload and create a new room after configuration changes. Browser requests use `no-store`; invalid or unavailable relay configuration fails explicitly.
 
 Until a working relay is configured, try both devices on the same Wi-Fi or another network, keep the host tab open, and use a newly created room. No guaranteed cross-network support is claimed. A missing room now rejects promptly with the room-not-found message instead of being replaced by a generic timeout.
+
+
+## Adaptive player strategy
+
+Medium and Hard now learn from public actions across completed solo hands. A rolling browser-local history retains at most 120 hands. Each record contains seat, betting round, action, chips committed, whether a bet was faced, and raise size relative to the pot; it contains no hole cards or deck information. Records survive refreshes and new solo tables. The player at seat zero represents the person using this browser, not an authenticated identity. Multiplayer behavior is not recorded.
+
+The model estimates voluntary preflop participation, preflop raises, folds when facing bets, postflop aggression, and sizing. Estimates use neutral prior counts, at least eight completed hands before adapting, sample-dependent confidence, and a 0.985 per-hand decay. Hard responds fully; Medium uses half-strength adjustments. Easy remains simple. Frequent callers invite larger value bets and fewer bluffs; frequent folders invite selective bluffs and wider late-position opens. Aggressive and selective players change the opponent ranges used by equity simulations. Multiple streets of aggression narrow an otherwise loose range. Jules is a little more cautious, Morgan sizes more aggressively, and Alex keeps the baseline policy.
+
+This is an online statistical opponent model with bounded strategy rules, not a language model, neural retraining, or a claim of optimal play. The earlier training benchmark does not establish the strength of this new adaptive layer. The AI player read disclosure shows a coarse read and offers **Reset player memory**; resetting discards the current partial hand and starts recording with the next hand. Browser storage failure falls back to memory for the current page.
+
+Validation: 31 tests, including divergent choices for the same hand against caller/folder histories, recent behavior overriding old habits, persistence and history bounds, hidden-card isolation, and 100 full adaptive-bot hands with legal moves and conserved chips.

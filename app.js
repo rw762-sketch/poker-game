@@ -1,7 +1,8 @@
-import { Poker, evaluate, labels } from './engine.js?v=a59dd8c345ae';
-import { tableSnapshot, animateTable } from './motion.js?v=a59dd8c345ae';
-import { OnlineRoom } from './multiplayer.js?v=a59dd8c345ae';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=a59dd8c345ae';
+import { PlayerMemory } from './player-memory.js?v=fa87388093f7';
+import { Poker, evaluate, labels } from './engine.js?v=fa87388093f7';
+import { tableSnapshot, animateTable } from './motion.js?v=fa87388093f7';
+import { OnlineRoom } from './multiplayer.js?v=fa87388093f7';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=fa87388093f7';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -10,6 +11,17 @@ const $ = id => document.getElementById(id);
 const suits = ['♠', '♥', '♣', '♦'];
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 let game = new Poker();
+const MEMORY_KEY='river-room-player-memory-v1';
+let playerMemory;
+try { playerMemory=new PlayerMemory(JSON.parse(localStorage.getItem(MEMORY_KEY))); } catch { playerMemory=new PlayerMemory(); }
+function savePlayerMemory() { try { localStorage.setItem(MEMORY_KEY,JSON.stringify(playerMemory.save())); } catch {} }
+function soloAction(action,amount) {
+  const observed=playerMemory.capture(game,action,amount);
+  if(!game.act(action,amount))return false;
+  playerMemory.record(observed);
+  if(game.done){playerMemory.finish();savePlayerMemory();}
+  return true;
+}
 let timer = null;
 let room = null;
 let lastFrame = null;
@@ -138,7 +150,7 @@ function act(action, amount) {
         pendingTimer = setTimeout(() => showRoomError('No response yet. Check the connection before trying again.'), 8000);
       }
     } catch (error) { showRoomError(error.message); }
-  } else if (game.act(action, amount)) { render(); schedule(); }
+  } else if (soloAction(action, amount)) { render(); schedule(); }
 }
 function deal() {
   if (!room) { start(); return; }
@@ -149,13 +161,19 @@ function schedule() {
   if (room || game.done || game.turn === 0 || $('multiplayerDialog').open) return;
   timer = setTimeout(() => {
     if (room) return;
-    const decision = chooseBotAction(botObservation(game), handDifficulty);
+    const decision = chooseBotAction(botObservation(game, playerMemory), handDifficulty);
     act(decision.action, decision.amount);
   }, 850 + Math.random() * 650);
 }
-function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selectedDifficulty; game.start(); render(); schedule(); }
+function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selectedDifficulty; game.start(); playerMemory.begin(game); if(game.done){playerMemory.finish();savePlayerMemory();} render(); schedule(); }
 function renderDifficulty() {
   $('difficultyPanel').hidden = !!room;
+  $('aiMemoryPanel').hidden = !!room;
+  const read=playerMemory.profile(0);
+  $('aiRead').textContent = `${read.hands} hands observed · ${read.label}`;
+  $('aiMemoryDetail').textContent = read.hands < 8
+    ? 'Bots build a read after at least 8 completed hands. Only public actions are recorded.'
+    : `You entered ${Math.round(read.vpip*100)}% of hands voluntarily and folded to ${Math.round(read.fold*100)}% of bets faced (smoothed estimates). Medium adapts gradually; Hard makes stronger adjustments.`;
   document.querySelectorAll('input[name="difficulty"]').forEach(input => { input.checked = input.value === selectedDifficulty; });
   $('difficultyStatus').textContent = selectedDifficulty !== handDifficulty
     ? `${DIFFICULTIES[handDifficulty].name} this hand · ${DIFFICULTIES[selectedDifficulty].name} starts next hand`
@@ -184,6 +202,10 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 
+$('resetAiMemory').onclick = () => {
+  playerMemory=new PlayerMemory();
+  savePlayerMemory();renderDifficulty();
+};
 $('help').onclick = () => $('rules').showModal();
 $('closeHelp').onclick = () => $('rules').close();
 $('multiplayer').onclick = () => { clearTimeout(timer); $('multiplayerDialog').showModal(); };
@@ -292,7 +314,7 @@ if (context?.registerTool) {
       const v = view();
       if (!input || v.done || v.turn !== 0 || pendingAction) throw Error('It is not your turn.');
       if (room) { room.action(input.action, input.amount); return { submitted:true }; }
-      if (!game.act(input.action, input.amount)) throw Error('Invalid poker action.');
+      if (!soloAction(input.action, input.amount)) throw Error('Invalid poker action.');
       render(); schedule(); return state();
     } },
     { name:'deal_next_hand', description:'Deal the next hand after the current hand ends; room host only in multiplayer.', inputSchema:{ type:'object', properties:{}, additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:() => {

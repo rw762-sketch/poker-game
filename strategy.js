@@ -1,4 +1,4 @@
-import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=a59dd8c345ae';
+import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=fa87388093f7';
 
 export const DEFAULT_POLICY = { openEarly:.64, openLate:.42, defend:.035, value:.61, aggression:.72, bluff:.055, size:.65 };
 export function positionOf(game, seat) {
@@ -17,7 +17,7 @@ export function boardTexture(cards, board) {
   const set = new Set(all.map(c => c.r)); if (set.has(14)) set.add(1);
   let straightDraw = false;
   for (let h = 5; h <= 14; h++) if (Array.from({ length:5 }, (_, i) => h - i).filter(r => set.has(r)).length === 4) straightDraw = true;
-  return { wet:Math.max(...counts) >= 2 || connected,
+  return { wet:Math.max(...counts) >= (board.length >= 4 ? 3 : 2) || connected,
     draw:board.length < 5 && (suits.some((n, s) => n === 4 && cards.some(c => c.s === s)) || straightDraw),
     category:Math.floor(rankHand(all) / 15 ** 5) };
 }
@@ -66,7 +66,7 @@ export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.
   const adjusted = equity * realization;
   if (o.owed && adjusted < price + p.defend && equity < .93) return fold;
   if (!o.canRaise) return call;
-  const valuable = equity > Math.max(p.value, 1 / (obs.opponents + 1) + .24);
+  const valuable = equity > Math.max(p.value, 1 / (obs.opponents + 1) + (p.valueMargin ?? .24));
   // Bluff less into multiple players; prefer draws while there are cards to come.
   const bluff = obs.opponents === 1 && (inPosition || texture.draw) &&
     (texture.draw || (!texture.wet && obs.board.length === 5)) &&
