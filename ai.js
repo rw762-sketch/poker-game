@@ -1,19 +1,31 @@
-import { adaptStrategy } from './player-memory.js?v=063eb6aeb4e4';
-import { evaluate } from './engine.js?v=063eb6aeb4e4';
-import { simulateEquity } from './poker-math.js?v=063eb6aeb4e4';
-import { readObservation, strategicAction, DEFAULT_POLICY } from './strategy.js?v=063eb6aeb4e4';
-import { TRAINED_POLICY } from './trained-policy.js?v=063eb6aeb4e4';
+import { learnBluffPolicy } from './opponent-model.js?v=e4793652134e';
+import { adaptStrategy } from './player-memory.js?v=e4793652134e';
+import { evaluate } from './engine.js?v=e4793652134e';
+import { simulateEquity } from './poker-math.js?v=e4793652134e';
+import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=e4793652134e';
+import { TRAINED_POLICY } from './trained-policy.js?v=e4793652134e';
 export const DIFFICULTIES = {
   easy: { name:'Easy', description:'Relaxed play. More calls, smaller bets.' },
   medium: { name:'Medium', description:'Position-aware play with gradual player reads.' },
-  hard: { name:'Hard', description:'Adapts to betting patterns across hands.' },
+  hard: { name:'Hard', description:'Learns betting responses from completed hands.' },
 };
 export const normalizeDifficulty = value => Object.hasOwn(DIFFICULTIES, value) ? value : 'medium';
 export function botObservation(game, memory) {
   const obs=readObservation(game);
   if (!memory) return obs;
   const seats=game.players.flatMap((p,i)=>i!==game.turn&&!p.folded?[i]:[]);
-  return {...obs,seat:game.turn,opponentProfiles:seats.map(i=>memory.profile(i)),opponentLines:seats.map(i=>memory.line(i))};
+  // Predictions describe a hypothetical legal heads-up bet, using only public state.
+  const opponent=game.players[seats[0]];
+  const predictions={};
+  if(seats.length===1&&obs.options.canRaise&&obs.board.length) {
+    for(const fraction of [.33,.5,.65,.8,1]) {
+      const amount=Math.min(obs.options.max,Math.max(obs.options.min,obs.current+Math.round(Math.max(20,(obs.pot+obs.options.call)*fraction)/10)*10));
+      const added=amount-obs.bet,call=Math.min(opponent.stack,Math.max(0,amount-opponent.bet));
+      const context={street:game.stage,price:call/Math.max(1,obs.pot+added+call),spr:opponent.stack/Math.max(20,obs.pot+added),opponents:1};
+      predictions[fraction]={...memory.predictFold(seats[0],context),riskFraction:added/Math.max(1,obs.pot),fraction};
+    }
+  }
+  return {...obs,seat:game.turn,foldPredictions:predictions,opponentProfiles:seats.map(i=>memory.profile(i)),opponentLines:seats.map(i=>memory.line(i))};
 }
 export function estimateEquity(observation, trials, random = Math.random) {
   return simulateEquity(observation, trials, random).equity;
@@ -26,7 +38,15 @@ export function chooseBotDecision(obs, difficulty = 'medium', random = Math.rand
     if(level==='hard'&&obs.seat===1){base.defend+=.01;base.size-=.05;}
     if(level==='hard'&&obs.seat===2){base.openLate-=.02;base.size+=.05;}
     const adapted=adaptStrategy(obs,base,level==='hard'?1:.5);
-    const analysis={policy:adapted.policy,reads:obs.opponentProfiles||[],position:obs.position};
+    let machineLearning=null;
+    if(level==='hard'&&obs.opponents===1&&obs.board.length&&obs.options.canRaise) {
+      const wet=boardTexture(obs.cards,obs.board).wet;
+      const intended=wet?adapted.policy.size:Math.max(.33,adapted.policy.size-.15);
+      const candidates=Object.values(obs.foldPredictions||{});
+      machineLearning=candidates.sort((a,b)=>Math.abs(a.fraction-intended)-Math.abs(b.fraction-intended))[0]||null;
+      if(machineLearning)adapted.policy=learnBluffPolicy(adapted.policy,machineLearning,machineLearning.riskFraction);
+    }
+    const analysis={machineLearning,policy:adapted.policy,reads:obs.opponentProfiles||[],position:obs.position};
     const action=strategicAction(adapted.observation,adapted.policy,random,level==='hard'?360:100,undefined,analysis);
     return {...action,analysis};
   }

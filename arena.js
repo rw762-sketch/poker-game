@@ -1,5 +1,5 @@
-import {Arena,BOT_NAMES} from './arena-model.js?v=063eb6aeb4e4';
-import {tableSnapshot,animateTable} from './motion.js?v=063eb6aeb4e4';
+import {Arena,BOT_NAMES} from './arena-model.js?v=e4793652134e';
+import {tableSnapshot,animateTable} from './motion.js?v=e4793652134e';
 const $=id=>document.getElementById(id), arena=new Arena();
 const colors=['#76d3b0','#e4be7a','#85b5ef','#cd9ee9'];
 const streets=['Pre-flop','Flop','Turn','River','Showdown'];
@@ -37,7 +37,8 @@ function renderDecision(){
  $('decisionCards').innerHTML=s.cards.map(c=>card(c,!$('reveal').checked)).join('');
  $('decisionEquity').textContent=a.equity===null?'Opening-hand rule':`${pct(a.equity)} · ${a.trials} samples`;
  $('decisionPrice').textContent=pct(a.price);$('decisionPosition').textContent=a.position;
- $('decisionReason').textContent=a.reason;
+ const ml=a.machineLearning;
+ $('decisionReason').textContent=a.reason+(ml ? ` ML estimates ${Math.round(ml.fold*100)}% folds to a nearby bet size (${ml.samples} training responses; ${ml.similar} similar situations). ${ml.confidence?'A bounded adjustment is applied to bluff frequency.':'Still gathering examples; no ML adjustment.'}` : '');
  $('decisionReads').replaceChildren(...s.opponents.map((name,i)=>{const li=document.createElement('li'),r=a.reads[i];li.textContent=`${name}: ${r.label.toLowerCase()} · ${r.hands} observed hands · assumed ${a.ranges[i]} range`;return li;}));
  $('decisionPolicy').textContent=`Sizing parameter: ${pct(a.policy.size)} of pot after calling. Selective bluff threshold: ${pct(a.policy.bluff)}. These apply only when the corresponding strategy conditions are met.`;
 }

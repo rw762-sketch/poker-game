@@ -189,3 +189,11 @@ dialog p { color: #b8c5ca; }
 }
 
 .ai-memory{margin:12px 0;color:var(--muted);font-size:13px}.ai-memory summary{font-size:13px}.ai-memory p{max-width:760px;line-height:1.6}.ai-memory button{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:13px}
+
+/* Table service sits outside betting controls so a gift never obscures a move. */
+.table-service{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 20px;margin:0 0 16px;border:1px solid #ffffff16;border-radius:14px;background:#141d1c}
+.table-service strong{display:block;font-size:14px;margin-top:5px}.table-service>button{margin-left:auto}.table-service>p{flex-basis:100%;margin:0;color:#a9b8b1;font-size:12px}
+#drinksDialog{width:min(440px,calc(100vw - 32px));box-sizing:border-box}#drinksForm>label{display:block;margin-bottom:8px}#drinkRecipient{width:100%;padding:12px;border-radius:8px;background:#182521;color:#f0eee5;border:1px solid #ffffff30;font:inherit}
+.drink-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;padding:0;margin:20px 0}.drink-options legend{margin-bottom:12px}.drink-options label{display:flex;align-items:center;gap:8px;border:1px solid #ffffff25;border-radius:10px;padding:12px;cursor:pointer}.drink-options label:has(input:checked){border-color:#d6b570;background:#d6b57015}.drink-options span{font-size:24px}.drink-options input{accent-color:#d6b570}#drinkError{color:#e6bc87;font-size:13px}
+.flying-drink{position:fixed;z-index:1000;pointer-events:none;font-size:38px;filter:drop-shadow(0 4px 8px #0008)}
+@media(max-width:480px){.table-service{padding:14px;gap:12px}.table-service strong{font-size:13px}.drink-options label{padding:10px}}

@@ -187,3 +187,19 @@ test('host plus three guests receive private state, actions, and resumed seats',
     assert.ok(guests.every(g => !g.connected));
   } finally { host.close(); guests.forEach(g => g.close()); }
 });
+test('guest gifts broadcast once to every player with host-assigned sender and no poker mutation', async () => {
+  const host = client(), guest = client(), observer = client();
+  const received = [[],[],[]];
+  [host,guest,observer].forEach((r,i)=>r.onGift=g=>received[i].push(g));
+  try {
+    await host.create('Host'); await guest.join('Guest',host.code); await observer.join('Observer',host.code); await settle();
+    host.deal(); await settle();
+    const before = JSON.stringify(host.table);
+    guest.buyDrink(observer.me,'tea'); await settle();
+    received.forEach(events=>assert.deepEqual(events,[{from:guest.me,to:observer.me,drink:'tea'}]));
+    assert.equal(JSON.stringify(host.table),before);
+    host.buyDrink(guest.me,'coffee'); await settle();
+    received.forEach(events=>assert.equal(events.length,2));
+    assert.equal(JSON.stringify(host.table),before);
+  } finally { host.close(); guest.close(); observer.close(); }
+});

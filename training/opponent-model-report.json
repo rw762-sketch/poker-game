@@ -1,0 +1,44 @@
+{
+  "method": "Logistic regression on public bet responses; frozen evaluation on disjoint complete simulated hands.",
+  "trainingHands": 2000,
+  "holdoutHands": 1000,
+  "trainingSeedStart": 610000,
+  "holdoutSeedStart": 910000,
+  "modelBrier": 0.18268040206973074,
+  "constantBaselineBrier": 0.18869413351871372,
+  "opponents": [
+    {
+      "seat": 0,
+      "trainingResponses": 2778,
+      "heldoutResponses": 1370,
+      "modelBrier": 0.22997672828170965,
+      "constantBaselineBrier": 0.24757258227762005
+    },
+    {
+      "seat": 1,
+      "trainingResponses": 3550,
+      "heldoutResponses": 1795,
+      "modelBrier": 0.08335560339578248,
+      "constantBaselineBrier": 0.08307719839607035
+    },
+    {
+      "seat": 2,
+      "trainingResponses": 2869,
+      "heldoutResponses": 1429,
+      "modelBrier": 0.243428816038441,
+      "constantBaselineBrier": 0.24995879268723029
+    },
+    {
+      "seat": 3,
+      "trainingResponses": 3357,
+      "heldoutResponses": 1634,
+      "modelBrier": 0.19901000007954653,
+      "constantBaselineBrier": 0.20177352506928473
+    }
+  ],
+  "limitations": [
+    "Synthetic context-sensitive opponents; no human performance claim.",
+    "Brier score measures prediction error, not poker profit.",
+    "Live model uses only the most recent 120 hands, requires familiar contexts, and does not use these benchmark weights."
+  ]
+}

@@ -1,5 +1,6 @@
-import { peerConfiguration } from './network-config.js?v=063eb6aeb4e4';
-import { HostTable } from './room-state.js?v=063eb6aeb4e4';
+import { peerConfiguration } from './network-config.js?v=e4793652134e';
+import { TableGifts } from './table-gifts.js?v=e4793652134e';
+import { HostTable } from './room-state.js?v=e4793652134e';
 const PREFIX = 'river-room-v1-';
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let loading;
@@ -7,7 +8,7 @@ function loadPeer() {
   if (window.Peer) return Promise.resolve(window.Peer);
   if (!loading) loading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=063eb6aeb4e4', import.meta.url).href;
+    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=e4793652134e', import.meta.url).href;
     script.onload = () => window.Peer ? resolve(window.Peer) : reject(Error('Multiplayer could not load.'));
     script.onerror = () => { loading = null; script.remove(); reject(Error('Multiplayer could not load. Check your connection and try again.')); };
     document.head.append(script);
@@ -33,8 +34,10 @@ export function networkMessage(error) {
 }
 
 export class OnlineRoom {
-  constructor({ onState, onStatus, onError }) {
+  constructor({ onState, onStatus, onError, onGift = () => {} }) {
     this.onState = onState;
+    this.onGift = onGift;
+    this.gifts = new TableGifts();
     this.onStatus = onStatus;
     this.onError = onError;
     this.connections = new Map();
@@ -137,6 +140,8 @@ export class OnlineRoom {
           cleanup();
           this.apply(message.state);
           resolve();
+        } else if (message.type === 'gift' && admitted) {
+          this.onGift(message.gift);
         } else if (message.type === 'error') {
           const error = typeof message.message === 'string' ? message.message.slice(0, 200) : 'Action rejected.';
           if (!admitted) { cleanup(); reject(Error(error)); }
@@ -195,6 +200,7 @@ export class OnlineRoom {
         }
         if (Date.now() - lastAction < 120) return;
         lastAction = Date.now();
+        if (message.type === 'gift') { this.shareGift(seat, message.to, message.drink); return; }
         if (message.type !== 'action') throw Error('Only the host can deal.');
         this.table.act(seat, message);
         this.broadcast();
@@ -234,6 +240,16 @@ export class OnlineRoom {
     const message = { type: 'action', action, amount, version: this.view.version };
     if (this.host) { this.table.act(0, message); this.broadcast(); }
     else this.send(this.connection, message);
+  }
+  shareGift(from, to, drink) {
+    const gift = this.gifts.create(from, to, drink, this.table.members);
+    this.onGift(gift);
+    for (const connection of this.connections.values()) this.send(connection, { type: 'gift', gift });
+  }
+  buyDrink(to, drink) {
+    if (!this.connected || !this.view) throw Error('Reconnect before sending a drink.');
+    if (this.host) this.shareGift(0, to, drink);
+    else this.send(this.connection, { type: 'gift', to, drink });
   }
   deal() {
     if (!this.host) throw Error('Only the host can deal.');

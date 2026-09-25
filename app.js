@@ -1,8 +1,9 @@
-import { PlayerMemory } from './player-memory.js?v=063eb6aeb4e4';
-import { Poker, evaluate, labels } from './engine.js?v=063eb6aeb4e4';
-import { tableSnapshot, animateTable } from './motion.js?v=063eb6aeb4e4';
-import { OnlineRoom } from './multiplayer.js?v=063eb6aeb4e4';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=063eb6aeb4e4';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e4793652134e';
+import { PlayerMemory } from './player-memory.js?v=e4793652134e';
+import { Poker, evaluate, labels } from './engine.js?v=e4793652134e';
+import { tableSnapshot, animateTable } from './motion.js?v=e4793652134e';
+import { OnlineRoom } from './multiplayer.js?v=e4793652134e';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e4793652134e';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -28,6 +29,7 @@ let lastFrame = null;
 let pendingAction = false;
 let pendingTimer = null;
 let connectionMessage = '';
+let soloGifts = new TableGifts();
 
 function card(c, hidden = false) {
   if (hidden) return '<div class="card back" aria-label="Face-down card"></div>';
@@ -170,7 +172,8 @@ function renderDifficulty() {
   $('difficultyPanel').hidden = !!room;
   $('aiMemoryPanel').hidden = !!room;
   const read=playerMemory.profile(0);
-  $('aiRead').textContent = `${read.hands} hands observed · ${read.label}`;
+  const samples=playerMemory.model(0).samples;
+  $('aiRead').textContent = `${read.hands} hands observed · ${read.label} · ML: ${samples} bet responses`;
   $('aiMemoryDetail').textContent = read.hands < 8
     ? 'Bots build a read after at least 8 completed hands. Only public actions are recorded.'
     : `You entered ${Math.round(read.vpip*100)}% of hands voluntarily and folded to ${Math.round(read.fold*100)}% of bets faced (smoothed estimates). Medium adapts gradually; Hard makes stronger adjustments.`;
@@ -206,6 +209,50 @@ $('resetAiMemory').onclick = () => {
   playerMemory=new PlayerMemory();
   savePlayerMemory();renderDifficulty();
 };
+function receiveGift(gift) {
+  if (!validGift(gift)) return;
+  const me = room?.me ?? 0;
+  const players = room?.view?.players ?? game.players;
+  if (!players[gift.from] || !players[gift.to]) return;
+  const drink = DRINKS[gift.drink];
+  $('giftNotice').textContent = `${players[gift.from].name} sent ${players[gift.to].name} ${drink.label.toLowerCase()}. Cheers!`;
+  const target = document.querySelector(`.seat-${(gift.to - me + 4) % 4}`);
+  const source = document.querySelector(`.seat-${(gift.from - me + 4) % 4}`);
+  if (!target || !source) return;
+  const a = source.getBoundingClientRect(), b = target.getBoundingClientRect();
+  const token = document.createElement('span');
+  token.className = 'flying-drink'; token.textContent = drink.icon;
+  token.setAttribute('aria-hidden', 'true');
+  Object.assign(token.style, { left:`${b.left+b.width/2}px`, top:`${b.top}px` });
+  document.body.append(token);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && token.animate) {
+    token.animate([{ transform:`translate(${a.left+a.width/2-b.left-b.width/2}px,${a.top-b.top}px) scale(.5)`, opacity:0 }, { transform:'translate(0, -12px) scale(1.15)', opacity:1, offset:.7 }, { transform:'translate(0, 0) scale(1)', opacity:1 }], { duration:850, easing:'ease-out' });
+  }
+  setTimeout(() => token.remove(), 2600);
+}
+$('openDrinks').onclick = () => {
+  const players = room?.view?.players ?? game.players;
+  $('drinkRecipient').replaceChildren();
+  players.forEach((p, i) => {
+    if (i === (room?.me ?? 0) || (room && (!p.occupied || !p.online))) return;
+    const option = document.createElement('option'); option.value = i; option.textContent = p.name;
+    $('drinkRecipient').append(option);
+  });
+  $('drinkError').textContent = $('drinkRecipient').options.length ? '' : 'Invite a friend to take a seat first.';
+  $('drinksDialog').showModal();
+};
+$('closeDrinks').onclick = () => $('drinksDialog').close();
+$('drinksForm').onsubmit = event => {
+  event.preventDefault();
+  const to = Number($('drinkRecipient').value);
+  const drink = new FormData(event.currentTarget).get('drink');
+  try {
+    if (!$('drinkRecipient').options.length) throw Error('No one is seated yet.');
+    if (room) room.buyDrink(to, drink);
+    else receiveGift(soloGifts.create(0, to, drink, game.players.map(() => ({ online:true }))));
+    $('drinksDialog').close();
+  } catch (error) { $('drinkError').textContent = error.message; }
+};
 $('help').onclick = () => $('rules').showModal();
 $('closeHelp').onclick = () => $('rules').close();
 $('multiplayer').onclick = () => { clearTimeout(timer); $('multiplayerDialog').showModal(); };
@@ -228,6 +275,7 @@ $('multiplayerForm').onsubmit = async event => {
   $('createRoom').disabled = $('joinRoom').disabled = true;
   clearTimeout(timer);
   const session = new OnlineRoom({
+    onGift: gift => { if (room === session) receiveGift(gift); },
     onState: () => {
       if (room !== session) return;
       pendingAction = false;

@@ -1,3 +1,4 @@
+import { OpponentModel, validContext } from './opponent-model.js?v=e4793652134e';
 // Public-action learning only: this module never reads cards or the deck.
 const LIMIT = 120;
 const blank = () => ({ hands:0, vpip:0, pfr:0, faced:0, folds:0, post:0, bets:0, calls:0, sizeTotal:0, sized:0 });
@@ -6,6 +7,7 @@ export class PlayerMemory {
   constructor(saved) {
     this.history = [];
     this.current = null;
+    this.models = new Map();
     if (saved?.version === 1 && Array.isArray(saved.history)) {
       for (const hand of saved.history.slice(-LIMIT)) {
         if (Array.isArray(hand.seats) && hand.seats.every(s=>Number.isInteger(s)&&s>=0&&s<4) && Array.isArray(hand.actions) && hand.actions.length<=200 && hand.actions.every(validAction)) {
@@ -21,14 +23,28 @@ export class PlayerMemory {
     const o=game.options(), p=game.players[game.turn];
     return {seat:game.turn,street:game.stage,type:type==='call'&&!o.owed?'check':type,
       faced:o.owed>0, size:type==='raise'?(amount-game.current)/Math.max(20,game.pot+o.call):0,
-      chips:type==='raise'?amount-p.bet:type==='call'?o.call:0};
+      chips:type==='raise'?amount-p.bet:type==='call'?o.call:0,
+      context:{street:game.stage,price:o.call/Math.max(1,game.pot+o.call),spr:p.stack/Math.max(20,game.pot),opponents:game.players.filter((other,i)=>i!==game.turn&&!other.folded).length}};
   }
   record(action) {
     if(this.current && validAction(action) && this.current.actions.length<200) this.current.actions.push({...action});
   }
   finish() {
     if(!this.current)return;
+    this.models.clear();
     this.history.push(this.current);this.history=this.history.slice(-LIMIT);this.current=null;
+  }
+  model(seat) {
+    if(!this.models.has(seat)) {
+      const examples=this.history.flatMap(hand=>hand.actions.filter(a=>a.seat===seat&&a.faced&&validContext(a.context)).map(a=>({context:a.context,fold:a.type==='fold'?1:0})));
+      this.models.set(seat,new OpponentModel(examples));
+    }
+    return this.models.get(seat);
+  }
+  predictFold(seat, context) {
+    const prediction=this.model(seat).predict(context);
+    if(this.history.filter(h=>h.seats.includes(seat)).length<8)prediction.confidence=0;
+    return prediction;
   }
   profile(seat) {
     const stats=blank();
@@ -60,7 +76,7 @@ export class PlayerMemory {
 }
 function validAction(a) {
   return a && Number.isInteger(a.seat)&&a.seat>=0&&a.seat<4&&Number.isInteger(a.street)&&a.street>=0&&a.street<=3&&
-    ['fold','call','check','raise'].includes(a.type)&&typeof a.faced==='boolean'&&Number.isFinite(a.size)&&a.size>=0&&a.size<=100000&&Number.isFinite(a.chips)&&a.chips>=0&&a.chips<=10000000;
+    ['fold','call','check','raise'].includes(a.type)&&typeof a.faced==='boolean'&&Number.isFinite(a.size)&&a.size>=0&&a.size<=100000&&Number.isFinite(a.chips)&&a.chips>=0&&a.chips<=10000000&&(a.context===undefined||validContext(a.context));
 }
 export function adaptStrategy(obs, base, strength=1) {
   const p={...base}, profiles=obs.opponentProfiles||[];
