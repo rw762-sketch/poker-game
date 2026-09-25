@@ -1,0 +1,15 @@
+{
+  "description": "Deterministic behavioral audit, 300 complete hands per opponent style; all 3 other seats use adaptive Hard. Fresh stacks each hand, retained learning. Measures responses to bets, not playing strength.",
+  "baselineCommit": "63d2bbe5d7462d8921adb0ec0b19aa38586022a0",
+  "baseline": [
+    {"style":"min-raise","facingBets":1732,"folded":653,"foldRate":0.377,"preflopFoldRate":0.523,"showdowns":242},
+    {"style":"half-pot","facingBets":1541,"folded":734,"foldRate":0.476,"preflopFoldRate":0.572,"showdowns":163},
+    {"style":"caller","facingBets":924,"folded":581,"foldRate":0.629,"preflopFoldRate":0.633,"showdowns":298}
+  ],
+  "revised": [
+    {"style":"min-raise","facingBets":1750,"folded":616,"foldRate":0.352,"preflopFoldRate":0.488,"showdowns":263},
+    {"style":"half-pot","facingBets":1600,"folded":677,"foldRate":0.423,"preflopFoldRate":0.512,"showdowns":214},
+    {"style":"caller","facingBets":881,"folded":499,"foldRate":0.566,"preflopFoldRate":0.562,"showdowns":298}
+  ],
+  "notes": "Different decisions change later opportunities. These are aggregate rates, not paired decisions or proof of higher win rate. The caller scenario still includes bets from the 3 Hard bots."
+}

@@ -86,3 +86,9 @@ Validation: 31 tests, including divergent choices for the same hand against call
 Spectators can reveal cards; bots still receive only their own cards and public information. The chip chart records stacks after completed hands, and the reads table shows the arena's learned tendencies. Learning remains in the arena tab, separate from local solo-player memory. New match preserves arena learning; Reset arena clears it. The timeline retains the latest 100 moves. Backgrounding the page pauses autoplay.
 
 Validation now includes 33 tests, with arena chip conservation, bounded history, reset/new-match behavior, and identical seeded actions with or without the explanatory snapshot.
+
+## Defending against bets
+
+The defense correction removes the absolute six-big-blind preflop fold shortcut and replaces the large fixed equity cushion with a price-scaled margin capped at three percentage points. River decisions and all-in calls do not receive a future-betting discount. Cheap calls into limped pots use equity rather than the unopened-pot opening cutoff. Merely matching a large bet no longer assigns a caller the raiser's tight range.
+
+`node scripts/check-fold-rates.mjs` runs 300 seeded hands each against a minimum-raise, half-pot, and calling opponent. The before/after behavioral audit is saved in `training/defense-check.json`. Against the half-pot opponent, folds per faced bet fell from 47.6% to 42.3%; this demonstrates changed behavior, not a higher win rate. The full suite now contains 38 tests including cheap-call, river, all-in, range-inference, and weak-hand folding regressions.

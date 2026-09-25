@@ -1,4 +1,4 @@
-import { validateScenario } from './poker-math.js?v=644a9e3f5770';
+import { validateScenario } from './poker-math.js?v=063eb6aeb4e4';
 const $ = id => document.getElementById(id);
 const suits = ['♠', '♥', '♣', '♦'], suitNames = ['spades','hearts','clubs','diamonds'];
 let worker = null, request = 0;
@@ -75,7 +75,7 @@ $('calculatorForm').onsubmit = event => {
   $('calculationStatus').textContent = 'Sampling possible hands and boards…';
   const finish = () => { worker?.terminate(); worker = null; $('calculate').disabled = false; $('calculate').textContent = 'Calculate hand'; $('cancelCalculation').hidden = true; };
   try {
-    worker = new Worker(new URL('./calculator-worker.js?v=644a9e3f5770', import.meta.url), { type:'module' });
+    worker = new Worker(new URL('./calculator-worker.js?v=063eb6aeb4e4', import.meta.url), { type:'module' });
     worker.onmessage = ({data}) => {
       if(generation !== request) return;
       finish(); if(data.error) $('calculationStatus').textContent = data.error; else show(data.simulation,data.advice,input);

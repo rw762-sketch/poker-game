@@ -1,4 +1,4 @@
-import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=644a9e3f5770';
+import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=063eb6aeb4e4';
 
 export const DEFAULT_POLICY = { openEarly:.64, openLate:.42, defend:.035, value:.61, aggression:.72, bluff:.055, size:.65 };
 export function positionOf(game, seat) {
@@ -29,7 +29,8 @@ export function readObservation(game) {
   const pressure = game.options().call / Math.max(20, game.pot);
   // Range profiles are model assumptions inferred from public betting, not hidden hands.
   const opponentRanges = others.map(p => {
-    if (/Raise/.test(p.action) || (raised && p.bet === game.current)) return pressure > .5 || game.current >= 120 ? 'tight' : 'standard';
+    if (/^Raise/.test(p.action)) return pressure > .5 || (game.current >= 160 && pressure >= .25) ? 'tight' : 'standard';
+    if (raised && p.bet === game.current) return 'standard';
     return game.board.length || p.total > 20 ? 'loose' : 'random';
   });
   return {
@@ -37,6 +38,7 @@ export function readObservation(game) {
     pot:game.pot, stack:me.stack, bet:me.bet, current:game.current,
     opponents, opponentRanges, position:positionOf(game, game.turn),
     bigBlind:20, unopened:!game.board.length && game.current <= 20,
+    limped:!game.board.length && others.some(p=>/^Call/.test(p.action)),
     effectiveStack:Math.min(me.stack, Math.max(...others.map(p => p.stack))),
     options:{ ...game.options() },
   };
@@ -51,7 +53,7 @@ export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.
   const size = fraction => ({ action:'raise', amount:Math.min(o.max, Math.max(o.min,
     obs.current + Math.round(Math.max(obs.bigBlind || 20, (obs.pot + o.call) * fraction) / 10) * 10)) });
   const strength = preflopStrength(obs.cards);
-  if (!obs.board.length && obs.unopened) {
+  if (!obs.board.length && obs.unopened && !obs.limped && o.call < obs.stack) {
     const cutoff = inPosition ? p.openLate : obs.position === 'middle' ? (p.openEarly + p.openLate) / 2 : p.openEarly;
     if (strength >= cutoff && o.canRaise) {
       explain('This hand meets the position-based opening threshold. Open for value and initiative.');
@@ -60,15 +62,20 @@ export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.
     if (o.owed && strength < cutoff - .08) { explain('The hand is below the opening threshold for this position.'); return fold; }
     explain(o.owed?'Continue with a marginal starting hand at the current price.':'Check the available free option.'); return call;
   }
-  if (!obs.board.length && obs.current >= 6 * (obs.bigBlind || 20) && strength < .56 && o.owed) { explain('The pre-flop price is too high for this starting hand.'); return fold; }
   const simulation = cachedEquity === undefined ? simulateEquity(obs, trials, random) : null;
   const equity = cachedEquity ?? simulation.equity;
   if(trace){trace.equity=equity;trace.trials=simulation?.trials||0;}
   const price = o.call / Math.max(1, obs.pot + o.call);
   const texture = boardTexture(obs.cards, obs.board);
-  const realization = obs.board.length === 5 ? 1 : inPosition ? .98 : obs.opponents > 1 ? .82 : .9;
+  // No future betting cost on the river or when the call commits the full stack.
+  const noFutureBetting = obs.board.length === 5 || o.call >= obs.stack || obs.effectiveStack === 0;
+  const realization = noFutureBetting ? 1 : inPosition ? .98 : obs.opponents > 1 ? .82 : .9;
   const adjusted = equity * realization;
-  if (o.owed && adjusted < price + p.defend && equity < .93) { explain('Position-adjusted equity is below the call price plus the strategy margin.'); return fold; }
+  // Price the uncertainty margin proportionally: a tiny call should not require
+  // an extra eight percentage points of equity, and an all-in needs no future margin.
+  const margin = noFutureBetting ? 0 : Math.min(.03, Math.max(0,p.defend)) * Math.min(1,price/.33);
+  if(trace){trace.adjustedEquity=adjusted;trace.callMargin=margin;}
+  if (o.owed && adjusted < price + margin && equity < .93) { explain('Estimated usable equity is below the call price plus a price-scaled uncertainty margin.'); return fold; }
   if (!o.canRaise) { explain('The call is acceptable, and raising is not available.'); return call; }
   const valuable = equity > Math.max(p.value, 1 / (obs.opponents + 1) + (p.valueMargin ?? .24));
   // Bluff less into multiple players; prefer draws while there are cards to come.
