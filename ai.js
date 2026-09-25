@@ -1,10 +1,12 @@
-import { learnBluffPolicy } from './opponent-model.js?v=e4793652134e';
-import { adaptStrategy } from './player-memory.js?v=e4793652134e';
-import { evaluate } from './engine.js?v=e4793652134e';
-import { simulateEquity } from './poker-math.js?v=e4793652134e';
-import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=e4793652134e';
-import { TRAINED_POLICY } from './trained-policy.js?v=e4793652134e';
+import { gtoDecision } from './gto.js?v=02481cfba85d';
+import { learnBluffPolicy } from './opponent-model.js?v=02481cfba85d';
+import { adaptStrategy } from './player-memory.js?v=02481cfba85d';
+import { evaluate } from './engine.js?v=02481cfba85d';
+import { simulateEquity } from './poker-math.js?v=02481cfba85d';
+import { readObservation, strategicAction, DEFAULT_POLICY, boardTexture } from './strategy.js?v=02481cfba85d';
+import { TRAINED_POLICY } from './trained-policy.js?v=02481cfba85d';
 export const DIFFICULTIES = {
+  gto: { name:'GTO', description:'Balanced mixed strategy · GTO-inspired approximation.' },
   easy: { name:'Easy', description:'Relaxed play. More calls, smaller bets.' },
   medium: { name:'Medium', description:'Position-aware play with gradual player reads.' },
   hard: { name:'Hard', description:'Learns betting responses from completed hands.' },
@@ -32,6 +34,7 @@ export function estimateEquity(observation, trials, random = Math.random) {
 }
 export function chooseBotDecision(obs, difficulty = 'medium', random = Math.random) {
   const level = normalizeDifficulty(difficulty);
+  if(level==='gto')return gtoDecision(obs,random);
   if (level !== 'easy') {
     const base={...(level==='hard'?TRAINED_POLICY:DEFAULT_POLICY)};
     // Distinct tendencies remain small; every bot responds to the same public evidence.

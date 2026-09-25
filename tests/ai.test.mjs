@@ -11,7 +11,7 @@ test('observation never reads opponents cards or the deck', () => {
   const seen = botObservation(g);
   assert.equal(seen.cards.length,2);
   assert.equal('deck' in seen,false);
-  for (const level of ['easy','medium','hard']) assert.ok(['call','raise','fold'].includes(chooseBotAction(seen,level,seeded()).action));
+  for (const level of ['easy','medium','hard','gto']) assert.ok(['call','raise','fold'].includes(chooseBotAction(seen,level,seeded()).action));
 });
 test('equity recognizes unbeatable hands and splits board ties', () => {
   assert.equal(estimateEquity({cards:cards('As Ks'),board:cards('Qs Js Ts 2d 3c'),opponents:3},30,seeded()),1);
@@ -27,7 +27,7 @@ test('difficulty changes decisions; hard folds expensive weak hands', () => {
   assert.equal(normalizeDifficulty(null),'medium');
 });
 test('all levels finish hands with legal moves and conserved chips', () => {
-  for (const level of ['easy','medium','hard']) {
+  for (const level of ['easy','medium','hard','gto']) {
     const random=seeded(12),g=new Poker();
     for(let hand=0;hand<4;hand++) {
       if(!g.start()) break;

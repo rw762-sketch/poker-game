@@ -1,9 +1,9 @@
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e4793652134e';
-import { PlayerMemory } from './player-memory.js?v=e4793652134e';
-import { Poker, evaluate, labels } from './engine.js?v=e4793652134e';
-import { tableSnapshot, animateTable } from './motion.js?v=e4793652134e';
-import { OnlineRoom } from './multiplayer.js?v=e4793652134e';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e4793652134e';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=02481cfba85d';
+import { PlayerMemory } from './player-memory.js?v=02481cfba85d';
+import { Poker, evaluate, labels } from './engine.js?v=02481cfba85d';
+import { tableSnapshot, animateTable } from './motion.js?v=02481cfba85d';
+import { OnlineRoom } from './multiplayer.js?v=02481cfba85d';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=02481cfba85d';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -170,7 +170,7 @@ function schedule() {
 function start() { clearTimeout(timer); lastFrame = null; handDifficulty = selectedDifficulty; game.start(); playerMemory.begin(game); if(game.done){playerMemory.finish();savePlayerMemory();} render(); schedule(); }
 function renderDifficulty() {
   $('difficultyPanel').hidden = !!room;
-  $('aiMemoryPanel').hidden = !!room;
+  $('aiMemoryPanel').hidden = !!room || handDifficulty === 'gto';
   const read=playerMemory.profile(0);
   const samples=playerMemory.model(0).samples;
   $('aiRead').textContent = `${read.hands} hands observed · ${read.label} · ML: ${samples} bet responses`;

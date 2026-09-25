@@ -197,3 +197,6 @@ dialog p { color: #b8c5ca; }
 .drink-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;padding:0;margin:20px 0}.drink-options legend{margin-bottom:12px}.drink-options label{display:flex;align-items:center;gap:8px;border:1px solid #ffffff25;border-radius:10px;padding:12px;cursor:pointer}.drink-options label:has(input:checked){border-color:#d6b570;background:#d6b57015}.drink-options span{font-size:24px}.drink-options input{accent-color:#d6b570}#drinkError{color:#e6bc87;font-size:13px}
 .flying-drink{position:fixed;z-index:1000;pointer-events:none;font-size:38px;filter:drop-shadow(0 4px 8px #0008)}
 @media(max-width:480px){.table-service{padding:14px;gap:12px}.table-service strong{font-size:13px}.drink-options label{padding:10px}}
+
+.difficulty-options{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:600px){.difficulty-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
