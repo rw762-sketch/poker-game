@@ -1,8 +1,18 @@
 export const DRINKS = Object.freeze({
-  coffee: { label:'Coffee', icon:'☕' },
-  tea: { label:'Tea', icon:'🍵' },
-  lemonade: { label:'Lemonade', icon:'🍋' },
-  mocktail: { label:'Mocktail', icon:'🍹' },
+  martini: {label:'Martini',icon:'🍸',note:'Crisp & classic',group:'Cocktails'},
+  mojito: {label:'Mojito',icon:'🌿',note:'Mint & lime',group:'Cocktails'},
+  oldfashioned: {label:'Old Fashioned',icon:'🥃',note:'A timeless pour',group:'Cocktails'},
+  margarita: {label:'Margarita',icon:'🍸',note:'Lime & a salted rim',group:'Cocktails'},
+  negroni: {label:'Negroni',icon:'🥃',note:'Bittersweet & bold',group:'Cocktails'},
+  espresso: {label:'Espresso Martini',icon:'☕',note:'A little pick-me-up',group:'Cocktails'},
+  cosmopolitan: {label:'Cosmopolitan',icon:'🍸',note:'Cranberry & citrus',group:'Cocktails'},
+  pinacolada: {label:'Piña Colada',icon:'🍍',note:'Pineapple & coconut',group:'Cocktails'},
+  spritz: {label:'Aperol Spritz',icon:'🍊',note:'Bubbly & bright',group:'Cocktails'},
+  whiskeySour: {label:'Whiskey Sour',icon:'🍋',note:'Smooth & citrusy',group:'Cocktails'},
+  coffee: {label:'Coffee',icon:'☕',note:'Keep it sharp',group:'Zero-proof'},
+  tea: {label:'Tea',icon:'🍵',note:'A moment of calm',group:'Zero-proof'},
+  lemonade: {label:'Lemonade',icon:'🍋',note:'Fresh & easy',group:'Zero-proof'},
+  mocktail: {label:'Tropical Mocktail',icon:'🍹',note:'All the island vibes',group:'Zero-proof'},
 });
 export function validGift(gift) {
   return gift && Number.isInteger(gift.from) && gift.from >= 0 && gift.from < 4 &&

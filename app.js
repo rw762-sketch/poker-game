@@ -1,10 +1,10 @@
-import { gtoThinkTime } from './gto.js?v=72cf100cea79';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=72cf100cea79';
-import { PlayerMemory } from './player-memory.js?v=72cf100cea79';
-import { Poker, evaluate, labels } from './engine.js?v=72cf100cea79';
-import { tableSnapshot, animateTable } from './motion.js?v=72cf100cea79';
-import { OnlineRoom } from './multiplayer.js?v=72cf100cea79';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=72cf100cea79';
+import { gtoThinkTime } from './gto.js?v=8b385c1c879f';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=8b385c1c879f';
+import { PlayerMemory } from './player-memory.js?v=8b385c1c879f';
+import { Poker, evaluate, labels } from './engine.js?v=8b385c1c879f';
+import { tableSnapshot, animateTable } from './motion.js?v=8b385c1c879f';
+import { OnlineRoom } from './multiplayer.js?v=8b385c1c879f';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=8b385c1c879f';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -65,7 +65,8 @@ function renderTable(v) {
     return `<div class="seat seat-${i} ${!v.done && v.turn === i ? 'active' : ''} ${p.folded && v.hand ? 'folded' : ''} ${!occupied ? 'empty-seat' : ''}">
       ${i ? `<div class="avatar">${occupied ? escape(p.name[0]) : '+'}</div>` : ''}
       <div class="cards">${p.cards.map(c => card(c, room ? c === null : i !== 0 && !(v.done && v.stage === 4 && !p.folded))).join('')}</div>
-      <div class="nameplate"><div class="player-name">${escape(name)}${v.dealer === i ? '<span class="badge" title="Dealer">D</span>' : ''}</div><div class="stack">${occupied ? p.stack.toLocaleString() : '—'}</div></div>
+      <div class="seat-identity"><div class="nameplate"><div class="player-name">${escape(name)}${v.dealer === i ? '<span class="badge" title="Dealer">D</span>' : ''}</div><div class="stack">${occupied ? p.stack.toLocaleString() : '—'}</div></div>
+      ${i && occupied && (!room || p.online) ? `<button type="button" class="seat-drink" data-gift-seat="${room ? (i + room.me) % 4 : i}" aria-label="Buy ${escape(p.name)} a drink" title="Buy ${escape(p.name)} a drink" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l-8 9L4 4Zm8 9v7m-4 0h8M6 7h12"/></svg></button>` : ''}</div>
       <div class="player-action">${escape(action || ' ')}</div></div>`;
   }).join('');
   $('log').innerHTML = v.logs.map(line => `<li>${escape(line)}</li>`).join('');
@@ -225,26 +226,41 @@ function receiveGift(gift) {
   }
   setTimeout(() => token.remove(), 2600);
 }
-$('openDrinks').onclick = () => {
+let drinkRecipient = null;
+let drinkRoom = null;
+let selectedDrink = 'martini';
+function updateDrinkButton() {
+  const selected = $('drinksForm').querySelector('input[name="drink"]:checked');
+  if (selected) selectedDrink = selected.value;
+  $('sendDrink').textContent = `Send ${DRINKS[selectedDrink].label}`;
+}
+function openDrinks(to) {
   const players = room?.view?.players ?? game.players;
-  $('drinkRecipient').replaceChildren();
-  players.forEach((p, i) => {
-    if (i === (room?.me ?? 0) || (room && (!p.occupied || !p.online))) return;
-    const option = document.createElement('option'); option.value = i; option.textContent = p.name;
-    $('drinkRecipient').append(option);
-  });
-  $('drinkError').textContent = $('drinkRecipient').options.length ? '' : 'Invite a friend to take a seat first.';
+  const player = players[to];
+  if (!Number.isInteger(to) || !player || to === (room?.me ?? 0) || (room && (!player.occupied || !player.online))) return;
+  drinkRecipient = to; drinkRoom = room;
+  $('drinkRecipientName').textContent = player.name;
+  $('drinkRecipientAvatar').textContent = player.name[0];
+  $('drinkMenu').innerHTML = ['Cocktails','Zero-proof'].map(group => `<fieldset class="drink-collection"><legend>${group}</legend><div class="drink-grid">${Object.entries(DRINKS).filter(([,d]) => d.group === group).map(([id,d]) => `<label class="drink-card"><input type="radio" name="drink" value="${id}" ${id === selectedDrink ? 'checked' : ''}><span class="drink-art" aria-hidden="true">${d.icon}</span><span class="drink-name">${d.label}</span><span class="drink-note">${d.note}</span><span class="drink-check" aria-hidden="true">✓</span></label>`).join('')}</div></fieldset>`).join('');
+  $('drinkError').textContent = '';
+  updateDrinkButton();
   $('drinksDialog').showModal();
-};
+}
+$('seats').addEventListener('click', event => {
+  const button = event.target.closest('[data-gift-seat]');
+  if (button) openDrinks(Number(button.dataset.giftSeat));
+});
+$('drinksForm').addEventListener('change', updateDrinkButton);
 $('closeDrinks').onclick = () => $('drinksDialog').close();
+$('drinksDialog').addEventListener('close', () => {
+  document.querySelector(`[data-gift-seat="${drinkRecipient}"]`)?.focus({preventScroll:true});
+});
 $('drinksForm').onsubmit = event => {
   event.preventDefault();
-  const to = Number($('drinkRecipient').value);
-  const drink = new FormData(event.currentTarget).get('drink');
   try {
-    if (!$('drinkRecipient').options.length) throw Error('No one is seated yet.');
-    if (room) room.buyDrink(to, drink);
-    else receiveGift(soloGifts.create(0, to, drink, game.players.map(() => ({ online:true }))));
+    if (room !== drinkRoom) throw Error('The table changed. Choose a player again.');
+    if (room) room.buyDrink(drinkRecipient, selectedDrink);
+    else receiveGift(soloGifts.create(0, drinkRecipient, selectedDrink, game.players.map(() => ({online:true}))));
     $('drinksDialog').close();
   } catch (error) { $('drinkError').textContent = error.message; }
 };
