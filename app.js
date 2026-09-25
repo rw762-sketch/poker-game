@@ -1,9 +1,9 @@
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=02481cfba85d';
-import { PlayerMemory } from './player-memory.js?v=02481cfba85d';
-import { Poker, evaluate, labels } from './engine.js?v=02481cfba85d';
-import { tableSnapshot, animateTable } from './motion.js?v=02481cfba85d';
-import { OnlineRoom } from './multiplayer.js?v=02481cfba85d';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=02481cfba85d';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e41832293449';
+import { PlayerMemory } from './player-memory.js?v=e41832293449';
+import { Poker, evaluate, labels } from './engine.js?v=e41832293449';
+import { tableSnapshot, animateTable } from './motion.js?v=e41832293449';
+import { OnlineRoom } from './multiplayer.js?v=e41832293449';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e41832293449';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;

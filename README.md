@@ -1,4 +1,4 @@
-# River Room
+# Ryan’s Online Poker
 
 A Texas Hold’em browser game with solo play against three computer opponents and online rooms for 2–4 friends. Includes rotating blinds, betting rounds, all-ins, side pots, ties, and best-five-of-seven hand evaluation. Play chips only. State lasts for the current page session.
 
@@ -10,9 +10,9 @@ Validation: 300 randomized tables (up to 15 hands each) checked for chip conserv
 
 ## GitHub Pages
 
-Published repository: https://github.com/rw762-sketch/poker-game
+Published repository: https://github.com/rw762-sketch/ryan-poker-online
 
-Game URL: https://rw762-sketch.github.io/poker-game/
+Game URL: https://rw762-sketch.github.io/ryan-poker-online/
 
 GitHub `main` contains the contents of local `dist/` at its root, plus a public README and `.nojekyll`. Pages deploys from `main` / root. The local `github` remote identifies this publication repository; its history is separate from this local source repository. Publish subsequent changes by updating the corresponding root files on GitHub. Do not force-push the local source branch over it.
 
@@ -42,7 +42,7 @@ Browser verification: two Chrome tabs created/joined a real PeerJS room, receive
 
 ## Poker Lab calculator
 
-Open **Poker calculator** from the game or visit [Poker Lab](https://rw762-sketch.github.io/poker-game/calculator.html). It runs separately so a live room stays open. Enter your cards, community cards, 1–5 opponents, position, an estimated opponent range, pot, call amount, and stack. It reports outright win/tie/loss probabilities, pot equity, sampling uncertainty, pot odds, showdown-only call EV, and a suggested action and bet size. Optional exact opponent cards support heads-up analysis.
+Open **Poker calculator** from the game or visit [Poker Lab](https://rw762-sketch.github.io/ryan-poker-online/calculator.html). It runs separately so a live room stays open. Enter your cards, community cards, 1–5 opponents, position, an estimated opponent range, pot, call amount, and stack. It reports outright win/tie/loss probabilities, pot equity, sampling uncertainty, pot odds, showdown-only call EV, and a suggested action and bet size. Optional exact opponent cards support heads-up analysis.
 
 Simulation runs in a Web Worker and can be canceled. Duplicate cards and inconsistent inputs are rejected. Position affects strategy advice, not the mathematical equity of a fixed hand against a fixed range. Range presets are project-defined starting-hand filters, not copied professional charts. Recommendations are heuristics, not solved optimal plays; future betting, fold equity, rake, side pots, and exact opponent behavior are excluded.
 
