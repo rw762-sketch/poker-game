@@ -78,3 +78,11 @@ The model estimates voluntary preflop participation, preflop raises, folds when 
 This is an online statistical opponent model with bounded strategy rules, not a language model, neural retraining, or a claim of optimal play. The earlier training benchmark does not establish the strength of this new adaptive layer. The AI player read disclosure shows a coarse read and offers **Reset player memory**; resetting discards the current partial hand and starts recording with the next hand. Browser storage failure falls back to memory for the current page.
 
 Validation: 31 tests, including divergent choices for the same hand against caller/folder histories, recent behavior overriding old habits, persistence and history bounds, hidden-card isolation, and 100 full adaptive-bot hands with legal moves and conserved chips.
+
+## AI Arena
+
+`arena.html` is a separate spectator page running four Hard bots through the same engine and strategy as solo play. Play/Pause, Next move, Next hand, and speed controls let you watch or step through decisions. Each timeline entry stores the actual decision-time inputs, equity sample result (when sampled), adapted parameters, and the matching policy rule. Preflop rule decisions are explicitly labeled rather than showing a fabricated equity estimate.
+
+Spectators can reveal cards; bots still receive only their own cards and public information. The chip chart records stacks after completed hands, and the reads table shows the arena's learned tendencies. Learning remains in the arena tab, separate from local solo-player memory. New match preserves arena learning; Reset arena clears it. The timeline retains the latest 100 moves. Backgrounding the page pauses autoplay.
+
+Validation now includes 33 tests, with arena chip conservation, bounded history, reset/new-match behavior, and identical seeded actions with or without the explanatory snapshot.

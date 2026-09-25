@@ -1,8 +1,8 @@
-import { adaptStrategy } from './player-memory.js?v=fa87388093f7';
-import { evaluate } from './engine.js?v=fa87388093f7';
-import { simulateEquity } from './poker-math.js?v=fa87388093f7';
-import { readObservation, strategicAction, DEFAULT_POLICY } from './strategy.js?v=fa87388093f7';
-import { TRAINED_POLICY } from './trained-policy.js?v=fa87388093f7';
+import { adaptStrategy } from './player-memory.js?v=644a9e3f5770';
+import { evaluate } from './engine.js?v=644a9e3f5770';
+import { simulateEquity } from './poker-math.js?v=644a9e3f5770';
+import { readObservation, strategicAction, DEFAULT_POLICY } from './strategy.js?v=644a9e3f5770';
+import { TRAINED_POLICY } from './trained-policy.js?v=644a9e3f5770';
 export const DIFFICULTIES = {
   easy: { name:'Easy', description:'Relaxed play. More calls, smaller bets.' },
   medium: { name:'Medium', description:'Position-aware play with gradual player reads.' },
@@ -18,7 +18,7 @@ export function botObservation(game, memory) {
 export function estimateEquity(observation, trials, random = Math.random) {
   return simulateEquity(observation, trials, random).equity;
 }
-export function chooseBotAction(obs, difficulty = 'medium', random = Math.random) {
+export function chooseBotDecision(obs, difficulty = 'medium', random = Math.random) {
   const level = normalizeDifficulty(difficulty);
   if (level !== 'easy') {
     const base={...(level==='hard'?TRAINED_POLICY:DEFAULT_POLICY)};
@@ -26,7 +26,9 @@ export function chooseBotAction(obs, difficulty = 'medium', random = Math.random
     if(level==='hard'&&obs.seat===1){base.defend+=.01;base.size-=.05;}
     if(level==='hard'&&obs.seat===2){base.openLate-=.02;base.size+=.05;}
     const adapted=adaptStrategy(obs,base,level==='hard'?1:.5);
-    return strategicAction(adapted.observation,adapted.policy,random,level==='hard'?360:100);
+    const analysis={policy:adapted.policy,reads:obs.opponentProfiles||[],position:obs.position};
+    const action=strategicAction(adapted.observation,adapted.policy,random,level==='hard'?360:100,undefined,analysis);
+    return {...action,analysis};
   }
   const o = obs.options, roll = random();
   const pair = obs.cards[0].r === obs.cards[1].r;
@@ -35,3 +37,5 @@ export function chooseBotAction(obs, difficulty = 'medium', random = Math.random
   if (o.canRaise && (pair || made >= 2) && roll > .85) return { action:'raise', amount:Math.min(o.max, Math.max(o.min, obs.current + Math.max(20, Math.round((obs.pot + o.call) * .3 / 10) * 10))) };
   return { action:'call' };
 }
+
+export function chooseBotAction(obs,difficulty='medium',random=Math.random){ const {action,amount}=chooseBotDecision(obs,difficulty,random); return amount===undefined?{action}:{action,amount}; }

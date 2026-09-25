@@ -1,5 +1,5 @@
-import { peerConfiguration } from './network-config.js?v=fa87388093f7';
-import { HostTable } from './room-state.js?v=fa87388093f7';
+import { peerConfiguration } from './network-config.js?v=644a9e3f5770';
+import { HostTable } from './room-state.js?v=644a9e3f5770';
 const PREFIX = 'river-room-v1-';
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let loading;
@@ -7,7 +7,7 @@ function loadPeer() {
   if (window.Peer) return Promise.resolve(window.Peer);
   if (!loading) loading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=fa87388093f7', import.meta.url).href;
+    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=644a9e3f5770', import.meta.url).href;
     script.onload = () => window.Peer ? resolve(window.Peer) : reject(Error('Multiplayer could not load.'));
     script.onerror = () => { loading = null; script.remove(); reject(Error('Multiplayer could not load. Check your connection and try again.')); };
     document.head.append(script);

@@ -1,4 +1,4 @@
-import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=fa87388093f7';
+import { preflopStrength, simulateEquity, rankHand } from './poker-math.js?v=644a9e3f5770';
 
 export const DEFAULT_POLICY = { openEarly:.64, openLate:.42, defend:.035, value:.61, aggression:.72, bluff:.055, size:.65 };
 export function positionOf(game, seat) {
@@ -41,9 +41,11 @@ export function readObservation(game) {
     options:{ ...game.options() },
   };
 }
-export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.random, trials = 160, cachedEquity) {
+export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.random, trials = 160, cachedEquity, trace) {
   const p = { ...DEFAULT_POLICY, ...parameters };
   const o = obs.options, roll = random();
+  const explain = reason => { if(trace)trace.reason=reason; };
+  if(trace){trace.equity=null;trace.price=o.call/Math.max(1,obs.pot+o.call);trace.ranges=[...obs.opponentRanges||[]];}
   const call = { action:'call' }, fold = { action:'fold' };
   const inPosition = obs.position === 'late';
   const size = fraction => ({ action:'raise', amount:Math.min(o.max, Math.max(o.min,
@@ -52,20 +54,22 @@ export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.
   if (!obs.board.length && obs.unopened) {
     const cutoff = inPosition ? p.openLate : obs.position === 'middle' ? (p.openEarly + p.openLate) / 2 : p.openEarly;
     if (strength >= cutoff && o.canRaise) {
+      explain('This hand meets the position-based opening threshold. Open for value and initiative.');
       return { action:'raise', amount:Math.min(o.max, Math.max(o.min, (obs.bigBlind || 20) * (inPosition ? 2.5 : 3))) };
     }
-    if (o.owed && strength < cutoff - .08) return fold;
-    return call;
+    if (o.owed && strength < cutoff - .08) { explain('The hand is below the opening threshold for this position.'); return fold; }
+    explain(o.owed?'Continue with a marginal starting hand at the current price.':'Check the available free option.'); return call;
   }
-  if (!obs.board.length && obs.current >= 6 * (obs.bigBlind || 20) && strength < .56 && o.owed) return fold;
+  if (!obs.board.length && obs.current >= 6 * (obs.bigBlind || 20) && strength < .56 && o.owed) { explain('The pre-flop price is too high for this starting hand.'); return fold; }
   const simulation = cachedEquity === undefined ? simulateEquity(obs, trials, random) : null;
   const equity = cachedEquity ?? simulation.equity;
+  if(trace){trace.equity=equity;trace.trials=simulation?.trials||0;}
   const price = o.call / Math.max(1, obs.pot + o.call);
   const texture = boardTexture(obs.cards, obs.board);
   const realization = obs.board.length === 5 ? 1 : inPosition ? .98 : obs.opponents > 1 ? .82 : .9;
   const adjusted = equity * realization;
-  if (o.owed && adjusted < price + p.defend && equity < .93) return fold;
-  if (!o.canRaise) return call;
+  if (o.owed && adjusted < price + p.defend && equity < .93) { explain('Position-adjusted equity is below the call price plus the strategy margin.'); return fold; }
+  if (!o.canRaise) { explain('The call is acceptable, and raising is not available.'); return call; }
   const valuable = equity > Math.max(p.value, 1 / (obs.opponents + 1) + (p.valueMargin ?? .24));
   // Bluff less into multiple players; prefer draws while there are cards to come.
   const bluff = obs.opponents === 1 && (inPosition || texture.draw) &&
@@ -73,9 +77,11 @@ export function strategicAction(obs, parameters = DEFAULT_POLICY, random = Math.
     equity > .12 && equity < .48 && roll < p.bluff && o.call <= obs.pot * .15;
   if ((valuable && roll < p.aggression) || bluff) {
     const fraction = equity > .85 ? Math.max(.8, p.size) : texture.wet ? p.size : Math.max(.33, p.size - .15);
-    if (obs.stack <= (obs.pot + o.call) * 1.2 && equity > .78) return { action:'raise', amount:o.max };
+    if (obs.stack <= (obs.pot + o.call) * 1.2 && equity > .78) { explain('Strong estimated equity and a short stack favor moving all in.'); return { action:'raise', amount:o.max }; }
+    explain(valuable?'Bet for value using estimated equity, board texture, and the learned sizing policy.':'Make a selective bluff using position, board texture, and the learned fold tendency.');
     return size(fraction);
   }
+  explain(o.owed?'The estimated equity supports continuing without a raise.':'Check: this hand did not meet the value-bet or selective-bluff conditions.');
   return call;
 }
 
