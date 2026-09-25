@@ -1,4 +1,4 @@
-import { validateScenario } from './poker-math.js?v=c74ebfd3321e';
+import { validateScenario } from './poker-math.js?v=a59dd8c345ae';
 const $ = id => document.getElementById(id);
 const suits = ['♠', '♥', '♣', '♦'], suitNames = ['spades','hearts','clubs','diamonds'];
 let worker = null, request = 0;
@@ -21,6 +21,7 @@ function updateCards() {
   const count = +$('stage').value;
   for (let i = 0; i < 5; i++) { const el = $(`board${i}`); el.hidden = i >= count; el.required = i < count; if (i >= count) el.value = ''; }
   $('boardCards').hidden = count === 0;
+  $('boardRow').hidden = count === 0;
   const selections = [...document.querySelectorAll('.card-picker')];
   const used = new Set(selections.map(el => el.value).filter(Boolean));
   for (const el of selections) {
@@ -31,7 +32,7 @@ function updateCards() {
 }
 function invalidate() {
   request++; worker?.terminate(); worker = null;
-  $('calculate').disabled = false; $('calculate').textContent = 'Calculate my hand'; $('cancelCalculation').hidden = true;
+  $('calculate').disabled = false; $('calculate').textContent = 'Calculate hand'; $('cancelCalculation').hidden = true;
   $('results').hidden = true; $('emptyResult').hidden = false;
   $('calculationStatus').textContent = 'Inputs changed. Calculate to see updated estimates.';
 }
@@ -53,7 +54,6 @@ const chips = value => Number(value.toFixed(1)).toLocaleString();
 function show(simulation, advice, input) {
   $('emptyResult').hidden = true; $('results').hidden = false;
   $('equityValue').textContent = pct(simulation.equity);
-  $('equityRing').style.setProperty('--equity', pct(simulation.equity));
   $('winValue').textContent = pct(simulation.win); $('tieValue').textContent = pct(simulation.tie); $('lossValue').textContent = pct(simulation.loss);
   $('sampleDetails').textContent = `${simulation.trials.toLocaleString()} sample deals · ${input.opponents} opponent${input.opponents > 1 ? 's' : ''}`;
   $('confidence').textContent = `Approx. 95% sampling interval: ${pct(Math.max(0,simulation.equity-simulation.margin95))}–${pct(Math.min(1,simulation.equity+simulation.margin95))}`;
@@ -73,9 +73,9 @@ $('calculatorForm').onsubmit = event => {
   $('results').hidden = true; $('emptyResult').hidden = false;
   $('calculate').disabled = true; $('calculate').textContent = 'Calculating…'; $('cancelCalculation').hidden = false;
   $('calculationStatus').textContent = 'Sampling possible hands and boards…';
-  const finish = () => { worker?.terminate(); worker = null; $('calculate').disabled = false; $('calculate').textContent = 'Calculate my hand'; $('cancelCalculation').hidden = true; };
+  const finish = () => { worker?.terminate(); worker = null; $('calculate').disabled = false; $('calculate').textContent = 'Calculate hand'; $('cancelCalculation').hidden = true; };
   try {
-    worker = new Worker(new URL('./calculator-worker.js?v=c74ebfd3321e', import.meta.url), { type:'module' });
+    worker = new Worker(new URL('./calculator-worker.js?v=a59dd8c345ae', import.meta.url), { type:'module' });
     worker.onmessage = ({data}) => {
       if(generation !== request) return;
       finish(); if(data.error) $('calculationStatus').textContent = data.error; else show(data.simulation,data.advice,input);
