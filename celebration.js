@@ -2,13 +2,10 @@
 export function celebrationEvent(before, after) {
   if (!before || before.hand !== after.hand) return null;
   if (after.done && !before.done) {
-    const winners = (after.awards || []).filter(a => a.profit > 0);
-    if (!winners.length) return null;
-    return { kind: winners.some(a => a.allIn) ? 'all-in-win' : 'win',
-      title: winners.some(a => a.allIn) ? 'ALL-IN VICTORY' : 'POT WON',
-      detail: winners.map(a => `${after.players[a.seat].name} +${a.profit.toLocaleString()} chips`).join(' · ') };
+    // The frame is already rotated so seat zero is the current viewer.
+    return after.outcome || null;
   }
-  const pushed = after.players.filter((p, i) => p.allIn && !before.players[i].allIn);
+  const pushed = after.players.filter((p, i) => i === 0 && p.allIn && !before.players[i].allIn);
   return pushed.length ? { kind: 'all-in', title: 'ALL IN', detail: pushed.map(p => p.name).join(' · ') } : null;
 }
 let dismissTimer;

@@ -1,3 +1,4 @@
+import { saveRoomMemory, restoreRoomMemory } from '../room-memory.js';
 import { PokerService } from './poker-service.mjs';
 import { HostTable } from '../room-state.js';
 import { Poker } from '../engine.js';
@@ -7,7 +8,7 @@ export function encode(service) {
   return JSON.stringify({
     sessions: [...service.sessions].map(([token, s]) => [token, { ...s, requests: [...s.requests] }]),
     rooms: [...service.rooms].map(([code, r]) => [code, {
-      ...r, gifts: [...r.gifts.last], table: { ...r.table, game: {
+      ...r, gifts: [...r.gifts.last], table: { ...r.table, memory: saveRoomMemory(r.table.memory), game: {
         ...r.table.game, acted: [...(r.table.game.acted || [])],
       } },
     }]),
@@ -20,7 +21,8 @@ export function decode(payload, now = Date.now) {
   service.sessions = new Map(data.sessions.map(([token, s]) => [token, { ...s, requests: new Map(s.requests) }]));
   service.rooms = new Map(data.rooms.map(([code, r]) => {
     const game = Object.assign(Object.create(Poker.prototype), r.table.game, { acted: new Set(r.table.game.acted) });
-    const table = Object.assign(Object.create(HostTable.prototype), r.table, { game });
+    const table = Object.assign(Object.create(HostTable.prototype), r.table, { game, memory: restoreRoomMemory(r.table.memory) });
+    if (!r.table.memory && !game.done) table.memory.begin(game);
     const gifts = new TableGifts(); gifts.last = new Map(r.gifts);
     return [code, { ...r, table, gifts }];
   }));

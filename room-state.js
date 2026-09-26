@@ -1,6 +1,8 @@
-import { Poker } from './engine.js?v=84376ad4c004';
+import { PlayerMemory } from './player-memory.js?v=a975310a4828';
+import { playerOutcome } from './player-outcome.js?v=a975310a4828';
+import { Poker } from './engine.js?v=a975310a4828';
 
-import { botObservation, chooseBotAction } from './ai.js?v=84376ad4c004';
+import { botObservation, chooseBotAction } from './ai.js?v=a975310a4828';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;
@@ -16,6 +18,7 @@ export function cleanName(value) {
 export class HostTable {
   constructor(name, now = Date.now()) {
     this.game = new Poker();
+    this.memory = new PlayerMemory();
     this.game.players.forEach(p => Object.assign(p, { name: 'Open seat', stack: 0, folded: true }));
     this.members = Array(4).fill(null);
     this.members[0] = { name: cleanName(name), online: true, seen: now, token: null };
@@ -88,6 +91,8 @@ export class HostTable {
     const stacks = this.game.players.map(p => p.stack);
     this.game.players.forEach((p, i) => { if (!ready[i]) p.stack = 0; });
     this.game.start();
+    this.memory.begin(this.game);
+    if (this.game.done) this.memory.finish();
     this.game.players.forEach((p, i) => { if (!ready[i]) p.stack = stacks[i]; });
     this.started = true;
     this.changed(now);
@@ -95,7 +100,10 @@ export class HostTable {
   act(seat, message, now = Date.now()) {
     if (this.game.done || seat !== this.game.turn || !this.members[seat]?.online) throw Error('It is not your turn.');
     if (message.version !== this.version) throw Error('The table changed. Try your action again.');
+    const observed = this.memory.capture(this.game, message.action, message.amount);
     if (!this.game.act(message.action, message.amount)) throw Error('That bet is not allowed.');
+    this.memory.record(observed);
+    if (this.game.done) { this.memory.finish(); this.memory.history = this.memory.history.slice(-24); }
     this.changed(now);
   }
   tick(now = Date.now(), offlineMs = OFFLINE_MS, includeHost = false) {
@@ -111,7 +119,7 @@ export class HostTable {
       const member = this.members[this.game.turn];
       if (member?.bot) {
         if (now >= this.deadline - TURN_MS + 1200) {
-          const decision = chooseBotAction(botObservation(this.game), 'medium');
+          const decision = chooseBotAction(botObservation(this.game, this.memory), 'medium');
           this.act(this.game.turn, { ...decision, version: this.version }, now);
           return true;
         }
@@ -121,6 +129,8 @@ export class HostTable {
         const player = this.game.players[this.game.turn];
         this.game.log(`${player.name} timed out.`);
         this.game.act(this.game.options().owed ? 'fold' : 'call');
+        // A disconnected player's automatic move is not a betting preference.
+        if (this.game.done) { this.memory.finish(); this.memory.history = this.memory.history.slice(-24); }
         this.changed(now);
         changed = true;
       }
@@ -135,6 +145,7 @@ export class HostTable {
       started: this.started, deadline: this.deadline,
       hand: g.hand, board: g.board.map(c => ({ ...c })), done: g.done,
       stage: g.stage ?? 0, pot: g.pot, turn: g.turn ?? -1,
+      outcome: playerOutcome(g, seat),
       awards: (g.awards || []).map(a => ({ ...a })),
       dealer: g.dealer, result: g.result || '', logs: [...g.logs],
       options: !g.done && seat === g.turn ? { ...g.options() } : null,

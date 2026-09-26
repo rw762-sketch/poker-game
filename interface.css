@@ -252,3 +252,14 @@ dialog p { color: #b8c5ca; }
 @keyframes table-moment { from { opacity: 0; transform: translateX(-50%) scale(.84); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
 @keyframes victory-confetti { 0% { opacity: 0; transform: translateY(0) rotate(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--drift), 180px) rotate(310deg); } }
 @media (prefers-reduced-motion: reduce) { .table-celebration, .table-celebration i { animation: none; } }
+
+.table-celebration.loss { border-color: #b47f83; background: #302228f5; animation: result-settle .65s ease-out both; box-shadow: 0 10px 30px #0005; }
+.table-celebration.loss strong { color: #e4b4b9; }
+.table-celebration.split, .table-celebration.partial { border-color: #7dbaae; background: #173332f5; animation: result-settle .65s ease-out both; }
+.table-celebration.split strong, .table-celebration.partial strong { color: #a5dfd3; }
+.table-celebration.fold, .table-celebration.watch { border-color: #667a80; background: #17272cf5; animation: result-settle .65s ease-out both; }
+.table-celebration.fold strong, .table-celebration.watch strong { color: #bdcbd0; }
+.table-celebration { max-height: 210px; overflow: hidden; }
+.table-celebration span { font-size: .875rem; line-height: 1.5; max-width: 480px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@keyframes result-settle { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .table-celebration { animation: none !important; } }

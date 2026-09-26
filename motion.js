@@ -60,6 +60,7 @@ function countPot(element, from, to) {
 export function tableSnapshot(game) {
   return {
     hand: game.hand,
+    outcome: game.outcome || null,
     awards: (game.awards || []).map(a => ({ ...a })),
     boardCount: game.board.length,
     done: game.done,
@@ -116,9 +117,9 @@ export function animateTable(before, after) {
       }
       if (after.done && !before.done) {
         const winnings = player.stack - old.stack + paid;
-        if (winnings > 0) {
+        if (winnings > 0) transfer(pot, seat.querySelector('.nameplate'), winnings, 650);
+        if (index === 0 && ['win','all-in-win'].includes(after.outcome?.kind)) {
           seat.classList.add('winner');
-          transfer(pot, seat.querySelector('.nameplate'), winnings, 650);
           animate(seat.querySelector('.nameplate'), [
             { transform: 'scale(1)', boxShadow: '0 0 0 0 #e3bb7200' },
             { transform: 'scale(1.08)', boxShadow: '0 0 0 12px #e3bb7230', offset: .45 },

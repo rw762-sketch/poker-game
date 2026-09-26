@@ -81,11 +81,11 @@ test('celebrations distinguish commitment, ordinary wins and all-in wins without
   const players=[{name:'Host',allIn:false},{name:'AI',allIn:false}];
   const before={hand:1,done:false,players};
   assert.equal(celebrationEvent(before,{...before,players:[{...players[0],allIn:true},players[1]]}).kind,'all-in');
-  const win={...before,done:true,awards:[{seat:0,profit:100,allIn:false}]};
+  const win={...before,done:true,outcome:{kind:'win',title:'YOU WIN',detail:'Your flush beat ace-high.'}};
   assert.equal(celebrationEvent(before,win).kind,'win');
-  win.awards[0].allIn=true;
+  win.outcome.kind='all-in-win';
   assert.equal(celebrationEvent(before,win).kind,'all-in-win');
-  win.awards[0].profit=0; assert.equal(celebrationEvent(before,win),null);
+  win.outcome={kind:'loss',title:'YOU LOST',detail:'Your ace-high lost to a flush.'}; assert.equal(celebrationEvent(before,win).kind,'loss');
   assert.equal(celebrationEvent(win,win),null);
   assert.equal(celebrationEvent(null,win),null);
 });

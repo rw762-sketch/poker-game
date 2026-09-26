@@ -1,14 +1,15 @@
-import { celebrateTable } from './celebration.js?v=84376ad4c004';
-import { gtoThinkTime } from './gto.js?v=84376ad4c004';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=84376ad4c004';
-import { PlayerMemory } from './player-memory.js?v=84376ad4c004';
-import { Poker, evaluate, labels } from './engine.js?v=84376ad4c004';
-import { tableSnapshot, animateTable } from './motion.js?v=84376ad4c004';
-import { LobbyClient, ServerRoom } from './server-room.js?v=84376ad4c004';
-import { MULTIPLAYER_API_URL } from './network-config.js?v=84376ad4c004';
-import { bindLobby } from './lobby.js?v=84376ad4c004';
-import { OnlineRoom } from './multiplayer.js?v=84376ad4c004';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=84376ad4c004';
+import { playerOutcome } from './player-outcome.js?v=a975310a4828';
+import { celebrateTable } from './celebration.js?v=a975310a4828';
+import { gtoThinkTime } from './gto.js?v=a975310a4828';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=a975310a4828';
+import { PlayerMemory } from './player-memory.js?v=a975310a4828';
+import { Poker, evaluate, labels } from './engine.js?v=a975310a4828';
+import { tableSnapshot, animateTable } from './motion.js?v=a975310a4828';
+import { LobbyClient, ServerRoom } from './server-room.js?v=a975310a4828';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=a975310a4828';
+import { bindLobby } from './lobby.js?v=a975310a4828';
+import { OnlineRoom } from './multiplayer.js?v=a975310a4828';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=a975310a4828';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -54,6 +55,7 @@ function render() {
   const v = view();
   renderTable(v);
   const nextFrame = tableSnapshot(v);
+  nextFrame.outcome = room ? v.outcome : playerOutcome(v, 0);
   animateTable(lastFrame, nextFrame);
   celebrateTable(lastFrame, nextFrame);
   lastFrame = nextFrame;
@@ -98,13 +100,14 @@ function renderTable(v) {
         button('Fill empty seats with AI', () => manage('fill'));
       }
       v.players.forEach((p, i) => { if (p.bot) button(`Remove ${p.name}`, () => manage('remove', (i + room.me) % 4), 'remove-ai'); });
-      $('handName').textContent = 'Add or remove AI before dealing · AI plays at Medium difficulty';
+      $('handName').textContent = 'Add or remove AI before dealing · AI adapts to betting habits in this room';
     }
     return;
   }
   if (v.done) {
-    $('turnTitle').textContent = 'THE RESULT';
-    $('status').textContent = v.result;
+    const outcome = room ? v.outcome : playerOutcome(v, 0);
+    $('turnTitle').textContent = outcome?.title || 'THE RESULT';
+    $('status').textContent = outcome?.detail || v.result;
     if (room) {
       const eligible = v.players.filter(p => p.occupied && p.online && p.stack > 0).length;
       if (room.host && eligible >= 2) button('Next hand', deal, 'primary');
