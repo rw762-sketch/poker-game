@@ -2,3 +2,5 @@ node_modules/
 dist/server/
 dist/.openai/
 server/assets.generated.mjs
+.env
+.env.local

@@ -1,8 +1,8 @@
-import { PlayerMemory } from './player-memory.js?v=a975310a4828';
-import { playerOutcome } from './player-outcome.js?v=a975310a4828';
-import { Poker } from './engine.js?v=a975310a4828';
+import { PlayerMemory } from './player-memory.js?v=c38a008d0ae1';
+import { playerOutcome } from './player-outcome.js?v=c38a008d0ae1';
+import { Poker } from './engine.js?v=c38a008d0ae1';
 
-import { botObservation, chooseBotAction } from './ai.js?v=a975310a4828';
+import { botObservation, chooseBotAction } from './ai.js?v=c38a008d0ae1';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;
@@ -118,6 +118,9 @@ export class HostTable {
     if (!this.game.done) {
       const member = this.members[this.game.turn];
       if (member?.bot) {
+        // Hosted API bots get a bounded window; a lost request cannot stall play.
+        if (this.apiBots && this.apiSkipDeadline !== this.deadline &&
+            now < this.deadline - TURN_MS + 9000) return changed;
         if (now >= this.deadline - TURN_MS + 1200) {
           const decision = chooseBotAction(botObservation(this.game, this.memory), 'medium');
           this.act(this.game.turn, { ...decision, version: this.version }, now);

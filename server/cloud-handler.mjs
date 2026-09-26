@@ -1,7 +1,8 @@
 import { storedRequest } from './cloud-state.mjs';
+import { claimBotJob, runBotJob } from './groq-bot.mjs';
 const endpoints = new Set(['/health', '/session', '/lobby', '/poll', '/create', '/join', '/action', '/deal', '/gift', '/leave', '/bots']);
 const readPaths = new Set(['/health', '/lobby', '/poll']);
-export async function api(request, env) {
+export async function api(request, env, ctx) {
   const url = new URL(request.url);
   const origin = request.headers.get('Origin');
   const allowed = !origin || origin === url.origin || origin === 'https://rw762-sketch.github.io';
@@ -33,7 +34,17 @@ export async function api(request, env) {
     }
     if (!env.DB) return reply({ error: 'The game server is temporarily unavailable. Try again shortly.' }, 503);
     const token = (request.headers.get('Authorization') || '').replace(/^Bearer /, '');
-    return reply(await storedRequest(env.DB, path, token, body));
+    if (!env.GROQ_API_KEY || path === '/health') return reply(await storedRequest(env.DB, path, token, body));
+    const { response, job } = await storedRequest(env.DB, path, token, body, Date.now, {
+      apiEnabled: true,
+      afterHandle(service, response) { return { response, job: claimBotJob(service, response) }; },
+    });
+    if (job) {
+      // The next poll sees the committed move. Never return private bot input.
+      const work = runBotJob(env.DB, job, env.GROQ_API_KEY).catch(() => {});
+      if (ctx?.waitUntil) ctx.waitUntil(work); else await work;
+    }
+    return reply(response);
   } catch (error) {
     if (error.status) return reply({ error: error.message }, error.status);
     // Rules errors are safe game messages; storage failures must not leak SQL/state.

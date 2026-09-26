@@ -1,4 +1,4 @@
-import { PlayerMemory } from './player-memory.js?v=a975310a4828';
+import { PlayerMemory } from './player-memory.js?v=c38a008d0ae1';
 
 // Persist only public betting observations, never cached models or hidden cards.
 const packHand = hand => hand && [hand.seats, hand.actions.map(a => [a.seat,a.street,a.type,a.faced,a.size,a.chips,a.context?.price,a.context?.spr,a.context?.opponents])];
