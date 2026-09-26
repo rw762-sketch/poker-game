@@ -22,19 +22,29 @@ The root `index.html` opens a mode selection screen. **Play with friends** leads
 
 Multiplayer games stay on the friends page. **Online lobby** and **Back to your table** switch views without unloading the connection, and leaving a room returns to the lobby. Previously shared root invite links redirect to the friends page with their room code and connection mode preserved. The home screen does not start a solo game or announce a player online.
 
+## Hosted multiplayer service
+
+The Sites build now includes an HTTPS API and a D1-backed room store. Run `npm install` and `npm run build` to produce the Worker; the authored browser files stay in `dist/` for GitHub Pages. The hosting manifest retains the existing Site and declares its `DB` binding. Drizzle migrations in `drizzle/` create the store.
+
+Every request reloads the authoritative state and commits it with a revision check. Concurrent joins and retried moves cannot overwrite a newer state. The small friends service is capped at 64 retained sessions and 16 tables, with a 900 KB snapshot limit. Idle sessions expire after 30 minutes. Timeouts advance when requests arrive, so the game continues while anyone is polling; an entirely abandoned table does not consume background timers.
+
+The public hosted game is https://river-room-poker-wr.rw762.chatgpt.site. GitHub Pages uses its HTTPS API in Server connection mode. The owner approved public access, and the service was verified without private-access credentials. China reachability still requires testing from the actual network.
+
+Tests in `tests/cloud-server.test.mjs` run the migration against SQLite and exercise concurrent independent requests, state restoration, private views, duplicate actions, input limits, and CORS. No browser-only storage is used as authority for hosted rooms.
+
 ## Server multiplayer and online lobby
 
 Run `node server/index.mjs` with Node 22 or newer, then open http://localhost:4173. This serves both the game and its multiplayer API with no third-party packages. `PORT` and `HOST` configure the listener. Keep one server process running; state is held in its memory, so restarts clear rooms. This is a small friends-game service, not a horizontally scaled backend.
 
-On GitHub Pages, the friends page automatically selects Direct connection and explains that the shared lobby is not hosted there. Server-only invites remain marked as unavailable rather than silently joining a different direct room.
+On GitHub Pages, the friends page uses the public server by default. Direct connection remains a manual alternative, with separate room codes; both players must select the same mode.
 
 **Play with friends → Enter lobby** shows everyone currently connected to this server, their lobby/table status, and tables with open seats. Names become visible when players enter the lobby or a server room. Presence refreshes every 5 seconds in the lobby and every second at a table; inactive players disappear after 30 seconds. Direct-mode players and unnamed solo players are not in this directory. Tables are public within this server.
 
 Server mode uses HTTP polling (HTTPS in production) and does not contact PeerJS or STUN/TURN services. The server owns the deck, validates actions, and sends each player only their permitted card view. The host still controls dealing but can refresh and return in the same tab. Temporary outages reconnect automatically with bounded backoff. Retried mutations have unique IDs so a lost response does not apply a move twice. A seat can be recovered within 30 minutes of inactivity while this server remains running; hands keep their 45-second turn clock, and disconnected players may time out. Explicitly leaving as host closes the room for everyone.
 
-For public use, run this server behind HTTPS and share that server's game URL with everyone. The existing GitHub Pages/static Sites publication cannot run `server/index.mjs`; these changes have **not** deployed a public game server. A static frontend can use a separate API by setting `MULTIPLAYER_API_URL` in `network-config.js` to its `https://…/api` address and setting the server's `ALLOWED_ORIGINS` to a comma-separated list of exact frontend origins. Never put session credentials in invite links. Both players must use the same server and connection mode. Invite links preserve that mode.
+For public use, run this server behind HTTPS and share that server's game URL with everyone. The existing GitHub Pages/static Sites publication cannot run `server/index.mjs`; the public server runs on Sites with D1 rather than inside GitHub Pages. A static frontend can use a separate API by setting `MULTIPLAYER_API_URL` in `network-config.js` to its `https://…/api` address and setting the server's `ALLOWED_ORIGINS` to a comma-separated list of exact frontend origins. Never put session credentials in invite links. Both players must use the same server and connection mode. Invite links preserve that mode.
 
-The server transport avoids direct peer-connectivity requirements, but no mainland-China reachability or latency guarantee has been established. The chosen game/API hostname and route must be tested from the friend's actual network. No paid service or external account was created.
+The server transport avoids direct peer-connectivity requirements, but no mainland-China reachability or latency guarantee has been established. The chosen game/API hostname and route must be tested from the friend's actual network. The existing Sites account hosts the service.
 
 Validation: `node --test tests/server.test.mjs tests/network.test.mjs tests/multiplayer.test.mjs` includes four clients against a real local HTTP listener, private-card isolation, lost-response retries, presence expiry, host recovery, room limits, and origin checks. These are local protocol tests, not a China-to-host network test.
 

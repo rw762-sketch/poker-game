@@ -1,4 +1,5 @@
-import { randomUUID, randomBytes } from 'node:crypto';
+const randomUUID = () => globalThis.crypto.randomUUID();
+const randomBytes = size => globalThis.crypto.getRandomValues(new Uint8Array(size));
 import { HostTable, cleanName } from '../room-state.js';
 import { TableGifts } from '../table-gifts.js';
 

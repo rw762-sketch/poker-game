@@ -135,9 +135,9 @@ test('overlapping lobby entry and room entry share a single session identity', a
   assert.deepEqual(await lobby, await join); assert.equal(client.token, 'same-session');
 });
 
-test('static GitHub Pages does not attempt calls to an unhosted lobby', async () => {
+test('GitHub Pages uses the hosted API and disabled endpoints never send requests', async () => {
   const { defaultMultiplayerApi } = await import('../network-config.js');
-  assert.equal(defaultMultiplayerApi('rw762-sketch.github.io'), '');
+  assert.equal(defaultMultiplayerApi('rw762-sketch.github.io'), 'https://river-room-poker-wr.rw762.chatgpt.site/api');
   assert.equal(defaultMultiplayerApi('localhost'), '/api');
   let requests = 0;
   const client = new LobbyClient({ base: '', storage: null, request: () => { requests++; } });

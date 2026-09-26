@@ -1,7 +1,8 @@
-// Serve the game with server/index.mjs, or set an HTTPS API base for a separate server.
+// GitHub Pages uses the verified public service; server-hosted pages use their own API.
+export const HOSTED_MULTIPLAYER_API_URL = 'https://river-room-poker-wr.rw762.chatgpt.site/api';
 export function defaultMultiplayerApi(hostname = globalThis.location?.hostname || '') {
   // GitHub Pages cannot execute the Node multiplayer backend.
-  return hostname.endsWith('.github.io') ? '' : '/api';
+  return hostname.endsWith('.github.io') ? HOSTED_MULTIPLAYER_API_URL : '/api';
 }
 export const MULTIPLAYER_API_URL = defaultMultiplayerApi();
 // Public browser configuration only. Never put a provider account/API secret here.

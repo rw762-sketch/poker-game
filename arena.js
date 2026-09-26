@@ -1,5 +1,5 @@
-import {Arena,BOT_NAMES} from './arena-model.js?v=9e0c01c60847';
-import {tableSnapshot,animateTable} from './motion.js?v=9e0c01c60847';
+import {Arena,BOT_NAMES} from './arena-model.js?v=2ef1ffe326a8';
+import {tableSnapshot,animateTable} from './motion.js?v=2ef1ffe326a8';
 const $=id=>document.getElementById(id), arena=new Arena();
 const colors=['#76d3b0','#e4be7a','#85b5ef','#cd9ee9'];
 const streets=['Pre-flop','Flop','Turn','River','Showdown'];
