@@ -1,4 +1,4 @@
-import { MULTIPLAYER_API_URL } from './network-config.js?v=2ef1ffe326a8';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=4d0ed86897be';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 export class LobbyClient {
@@ -12,7 +12,7 @@ export class LobbyClient {
     let error;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await this.fetch(this.base + path, {
+        const response = await this.fetch.call(globalThis, this.base + path, {
           method: body ? 'POST' : 'GET', cache: 'no-store',
           headers: { ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
           ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(12000),

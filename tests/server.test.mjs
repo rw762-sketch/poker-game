@@ -144,3 +144,17 @@ test('GitHub Pages uses the hosted API and disabled endpoints never send request
   await assert.rejects(client.enter('Alice'), /not hosted/);
   assert.equal(requests, 0);
 });
+
+test('browser fetch receives its global receiver rather than the lobby client', async () => {
+  let calls = 0;
+  const client = new LobbyClient({ base: 'https://game.example/api', storage: null,
+    request: function () {
+      if (this !== globalThis) throw new TypeError('Illegal invocation');
+      calls++;
+      return Promise.resolve({ ok: true, headers: new Headers({ 'content-type': 'application/json' }), json: async () => ({ token: 'browser-session' }) });
+    },
+  });
+  await client.enter('Player');
+  assert.equal(calls, 1);
+  assert.equal(client.token, 'browser-session');
+});
