@@ -1,5 +1,5 @@
 import { storedRequest } from './cloud-state.mjs';
-const endpoints = new Set(['/health', '/session', '/lobby', '/poll', '/create', '/join', '/action', '/deal', '/gift', '/leave']);
+const endpoints = new Set(['/health', '/session', '/lobby', '/poll', '/create', '/join', '/action', '/deal', '/gift', '/leave', '/bots']);
 const readPaths = new Set(['/health', '/lobby', '/poll']);
 export async function api(request, env) {
   const url = new URL(request.url);

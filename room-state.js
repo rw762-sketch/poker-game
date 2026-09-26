@@ -1,4 +1,6 @@
-import { Poker } from './engine.js?v=4d0ed86897be';
+import { Poker } from './engine.js?v=c9e90005af1b';
+
+import { botObservation, chooseBotAction } from './ai.js?v=c9e90005af1b';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;
@@ -38,6 +40,25 @@ export class HostTable {
     } else Object.assign(this.members[seat], { online: true, seen: now });
     this.version++;
     return seat;
+  }
+  manageAI(seat, operation, target, version, now = Date.now()) {
+    if (seat !== 0) throw Error('Only the host can manage AI seats.');
+    if (version !== this.version) throw Error('The table changed. Try again.');
+    if (this.started) throw Error('Set up AI seats before the first hand.');
+    if (operation === 'add' || operation === 'fill') {
+      const empty = this.members.flatMap((m, i) => !m ? [i] : []);
+      if (!empty.length) throw Error('This room is full.');
+      for (const i of operation === 'fill' ? empty : empty.slice(0, 1)) {
+        const name = ['','Jules AI','Morgan AI','Alex AI'][i];
+        this.members[i] = { name, bot: true, online: true, seen: now, token: null };
+        Object.assign(this.game.players[i], { name, stack: 1000 });
+      }
+    } else if (operation === 'remove') {
+      if (!Number.isInteger(target) || !this.members[target]?.bot) throw Error('Choose an AI seat.');
+      this.members[target] = null;
+      Object.assign(this.game.players[target], { name: 'Open seat', stack: 0, folded: true });
+    } else throw Error('Unknown AI seat option.');
+    this.version++;
   }
   touch(seat, now = Date.now()) {
     const member = this.members[seat];
@@ -80,7 +101,7 @@ export class HostTable {
   tick(now = Date.now(), offlineMs = OFFLINE_MS, includeHost = false) {
     let changed = false;
     this.members.forEach((m, i) => {
-      if ((i > 0 || includeHost) && m?.online && now - m.seen > offlineMs) {
+      if ((i > 0 || includeHost) && !m?.bot && m?.online && now - m.seen > offlineMs) {
         m.online = false;
         this.version++;
         changed = true;
@@ -88,6 +109,14 @@ export class HostTable {
     });
     if (!this.game.done) {
       const member = this.members[this.game.turn];
+      if (member?.bot) {
+        if (now >= this.deadline - TURN_MS + 1200) {
+          const decision = chooseBotAction(botObservation(this.game), 'medium');
+          this.act(this.game.turn, { ...decision, version: this.version }, now);
+          return true;
+        }
+        return changed;
+      }
       if (now >= this.deadline || (!member?.online && now - (member?.seen || 0) >= offlineMs)) {
         const player = this.game.players[this.game.turn];
         this.game.log(`${player.name} timed out.`);
@@ -106,10 +135,12 @@ export class HostTable {
       started: this.started, deadline: this.deadline,
       hand: g.hand, board: g.board.map(c => ({ ...c })), done: g.done,
       stage: g.stage ?? 0, pot: g.pot, turn: g.turn ?? -1,
+      awards: (g.awards || []).map(a => ({ ...a })),
       dealer: g.dealer, result: g.result || '', logs: [...g.logs],
       options: !g.done && seat === g.turn ? { ...g.options() } : null,
       players: g.players.map((p, i) => ({
         name: this.members[i]?.name || 'Open seat',
+        bot: !!this.members[i]?.bot, allIn: !!p.allIn,
         occupied: !!this.members[i], online: !!this.members[i]?.online,
         stack: p.stack, bet: p.bet, total: p.total, folded: p.folded, action: p.action,
         cards: p.cards.map(c => i === seat || (g.done && g.stage === 4 && !p.folded) ? { ...c } : null),

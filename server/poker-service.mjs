@@ -95,6 +95,7 @@ export class PokerService {
       const room = this.rooms.get(session.room);
       if (!room) fail('This room has closed. Return to the lobby.', 410);
       if (path === '/action') room.table.act(session.seat, body, this.now());
+      else if (path === '/bots') room.table.manageAI(session.seat, body.operation, body.seat, body.version, this.now());
       else if (path === '/deal') room.table.start(session.seat, body.version, this.now());
       else if (path === '/gift') {
         const gift = room.gifts.create(session.seat, body.to, body.drink, room.table.members, this.now());

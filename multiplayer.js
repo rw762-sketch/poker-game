@@ -1,6 +1,6 @@
-import { peerConfiguration } from './network-config.js?v=4d0ed86897be';
-import { TableGifts } from './table-gifts.js?v=4d0ed86897be';
-import { HostTable } from './room-state.js?v=4d0ed86897be';
+import { peerConfiguration } from './network-config.js?v=c9e90005af1b';
+import { TableGifts } from './table-gifts.js?v=c9e90005af1b';
+import { HostTable } from './room-state.js?v=c9e90005af1b';
 const PREFIX = 'river-room-v1-';
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let loading;
@@ -8,7 +8,7 @@ function loadPeer() {
   if (window.Peer) return Promise.resolve(window.Peer);
   if (!loading) loading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=4d0ed86897be', import.meta.url).href;
+    script.src = new URL('./vendor/peerjs-1.5.5.min.js?v=c9e90005af1b', import.meta.url).href;
     script.onload = () => window.Peer ? resolve(window.Peer) : reject(Error('Multiplayer could not load.'));
     script.onerror = () => { loading = null; script.remove(); reject(Error('Multiplayer could not load. Check your connection and try again.')); };
     document.head.append(script);
@@ -250,6 +250,11 @@ export class OnlineRoom {
     if (!this.connected || !this.view) throw Error('Reconnect before sending a drink.');
     if (this.host) this.shareGift(0, to, drink);
     else this.send(this.connection, { type: 'gift', to, drink });
+  }
+  manageAI(operation, seat) {
+    if (!this.host) throw Error('Only the host can manage AI seats.');
+    this.table.manageAI(0, operation, seat, this.view.version);
+    this.broadcast();
   }
   deal() {
     if (!this.host) throw Error('Only the host can deal.');

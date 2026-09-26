@@ -1,4 +1,4 @@
-import { OpponentModel, validContext } from './opponent-model.js?v=4d0ed86897be';
+import { OpponentModel, validContext } from './opponent-model.js?v=c9e90005af1b';
 // Public-action learning only: this module never reads cards or the deck.
 const LIMIT = 120;
 const blank = () => ({ hands:0, vpip:0, pfr:0, faced:0, folds:0, post:0, bets:0, calls:0, sizeTotal:0, sized:0 });
@@ -21,6 +21,7 @@ export class PlayerMemory {
   }
   capture(game, type, amount) {
     const o=game.options(), p=game.players[game.turn];
+    if(type==='allin'){type=o.owed>=p.stack?'call':'raise';amount=o.max;}
     return {seat:game.turn,street:game.stage,type:type==='call'&&!o.owed?'check':type,
       faced:o.owed>0, size:type==='raise'?(amount-game.current)/Math.max(20,game.pot+o.call):0,
       chips:type==='raise'?amount-p.bet:type==='call'?o.call:0,

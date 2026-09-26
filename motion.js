@@ -60,12 +60,13 @@ function countPot(element, from, to) {
 export function tableSnapshot(game) {
   return {
     hand: game.hand,
+    awards: (game.awards || []).map(a => ({ ...a })),
     boardCount: game.board.length,
     done: game.done,
     stage: game.stage,
     pot: game.pot,
     turn: game.turn,
-    players: game.players.map(p => ({ stack: p.stack, total: p.total, folded: p.folded })),
+    players: game.players.map(p => ({ name: p.name, allIn: !!p.allIn, stack: p.stack, total: p.total, folded: p.folded })),
   };
 }
 

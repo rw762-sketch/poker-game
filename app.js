@@ -1,13 +1,14 @@
-import { gtoThinkTime } from './gto.js?v=4d0ed86897be';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=4d0ed86897be';
-import { PlayerMemory } from './player-memory.js?v=4d0ed86897be';
-import { Poker, evaluate, labels } from './engine.js?v=4d0ed86897be';
-import { tableSnapshot, animateTable } from './motion.js?v=4d0ed86897be';
-import { LobbyClient, ServerRoom } from './server-room.js?v=4d0ed86897be';
-import { MULTIPLAYER_API_URL } from './network-config.js?v=4d0ed86897be';
-import { bindLobby } from './lobby.js?v=4d0ed86897be';
-import { OnlineRoom } from './multiplayer.js?v=4d0ed86897be';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=4d0ed86897be';
+import { celebrateTable } from './celebration.js?v=c9e90005af1b';
+import { gtoThinkTime } from './gto.js?v=c9e90005af1b';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=c9e90005af1b';
+import { PlayerMemory } from './player-memory.js?v=c9e90005af1b';
+import { Poker, evaluate, labels } from './engine.js?v=c9e90005af1b';
+import { tableSnapshot, animateTable } from './motion.js?v=c9e90005af1b';
+import { LobbyClient, ServerRoom } from './server-room.js?v=c9e90005af1b';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=c9e90005af1b';
+import { bindLobby } from './lobby.js?v=c9e90005af1b';
+import { OnlineRoom } from './multiplayer.js?v=c9e90005af1b';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=c9e90005af1b';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -46,7 +47,7 @@ function view() {
   if (!room?.view) return game;
   const v = room.view;
   const relative = seat => seat < 0 ? -1 : (seat - v.me + 4) % 4;
-  return { ...v, turn: relative(v.turn), dealer: relative(v.dealer), players: Array.from({ length:4 }, (_, i) => v.players[(i + v.me) % 4]) };
+  return { ...v, awards: (v.awards || []).map(a => ({ ...a, seat: relative(a.seat) })), turn: relative(v.turn), dealer: relative(v.dealer), players: Array.from({ length:4 }, (_, i) => v.players[(i + v.me) % 4]) };
 }
 function options() { return room ? room.view?.options || {} : game.options(); }
 function render() {
@@ -54,6 +55,7 @@ function render() {
   renderTable(v);
   const nextFrame = tableSnapshot(v);
   animateTable(lastFrame, nextFrame);
+  celebrateTable(lastFrame, nextFrame);
   lastFrame = nextFrame;
   renderRoom();
 }
@@ -88,7 +90,16 @@ function renderTable(v) {
     $('turnTitle').textContent = 'YOUR PRIVATE TABLE';
     $('status').textContent = room.host ? `${count} of 4 seats filled. Invite friends, then deal.` : 'You’re in. The host will deal when everyone is ready.';
     $('handName').textContent = '2–4 players · 1,000 chips each · 45 seconds per turn';
-    if (room.host) button('Deal first hand', deal, 'primary').disabled = count < 2;
+    if (room.host) {
+      button('Deal first hand', deal, 'primary').disabled = count < 2;
+      const manage = (operation, seat) => { try { room.manageAI(operation, seat); } catch (error) { showRoomError(error.message); } };
+      if (v.players.some(p => !p.occupied)) {
+        button('Add AI', () => manage('add'));
+        button('Fill empty seats with AI', () => manage('fill'));
+      }
+      v.players.forEach((p, i) => { if (p.bot) button(`Remove ${p.name}`, () => manage('remove', (i + room.me) % 4), 'remove-ai'); });
+      $('handName').textContent = 'Add or remove AI before dealing · AI plays at Medium difficulty';
+    }
     return;
   }
   if (v.done) {
@@ -108,6 +119,7 @@ function renderTable(v) {
     $('status').textContent = o.owed ? `${o.call} chips to call. What’s your play?` : 'Check or make your move.';
     button('Fold', () => act('fold'), 'fold');
     button(o.owed ? `Call ${o.call}` : 'Check', () => act('call'));
+    if (o.canRaise || o.owed >= player.stack) button(`All in · ${player.stack.toLocaleString()}`, () => act('allin'), 'all-in');
     if (o.canRaise) {
       let amount = o.min;
       const raise = button(`Raise to ${amount}`, () => act('raise', amount), 'primary');
@@ -400,7 +412,7 @@ if (context?.registerTool) {
   };
   for (const tool of [
     { name:'read_poker_table', description:'Read public table state and your own private cards.', inputSchema:{ type:'object', properties:{}, additionalProperties:false }, annotations:{ readOnlyHint:true }, execute:state },
-    { name:'play_poker_action', description:'Fold, call/check, or raise on your turn using play chips.', inputSchema:{ type:'object', properties:{ action:{ type:'string', enum:['fold','call','raise'] }, amount:{ type:'integer' } }, required:['action'], additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:input => {
+    { name:'play_poker_action', description:'Fold, call/check, raise, or go all in on your turn using play chips.', inputSchema:{ type:'object', properties:{ action:{ type:'string', enum:['fold','call','raise','allin'] }, amount:{ type:'integer' } }, required:['action'], additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:input => {
       const v = view();
       if (!input || v.done || v.turn !== 0 || pendingAction) throw Error('It is not your turn.');
       if (room) { room.action(input.action, input.amount); return { submitted:true }; }

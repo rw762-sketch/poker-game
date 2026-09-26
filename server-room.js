@@ -1,4 +1,4 @@
-import { MULTIPLAYER_API_URL } from './network-config.js?v=4d0ed86897be';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=c9e90005af1b';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 export class LobbyClient {
@@ -98,6 +98,7 @@ export class ServerRoom {
     }).finally(() => { this.busy = false; });
   }
   action(action, amount) { this.command('/action', { action, amount, version: this.view?.version }); }
+  manageAI(operation, seat) { this.command('/bots', { operation, seat, version: this.view?.version }); }
   deal() { this.command('/deal', { version: this.view?.version }); }
   buyDrink(to, drink) { this.command('/gift', { to, drink }); }
   close({ leave = true } = {}) {

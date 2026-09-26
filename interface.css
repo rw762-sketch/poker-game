@@ -234,3 +234,21 @@ dialog p { color: #b8c5ca; }
 .public-rooms { display: grid; gap: 8px; max-height: 260px; overflow-y: auto; }
 .lobby-table button { flex-shrink: 0; }
 @media (max-width: 440px) { .online-players { grid-template-columns: 1fr; } }
+
+/* All-in commitment, a pot win, and an all-in win have distinct table moments. */
+.actions button.all-in { color: #fff1dc; background: #873c28; border: 1px solid #f5ac70; font-weight: 750; }
+.actions button.all-in:hover { background: #a74b30; }
+.actions button.remove-ai { font-size: .875rem; }
+.table-celebration { position: absolute; z-index: 8; top: 34%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 88%; padding: 16px 24px; border: 1px solid #dec184; border-radius: 14px; background: #12282bf5; text-align: center; pointer-events: none; box-shadow: 0 10px 45px #0008; animation: table-moment .5s ease-out both; }
+.table-celebration strong, .table-celebration span { display: block; position: relative; z-index: 1; }
+.table-celebration strong { font-size: clamp(1.3rem, 3vw, 2.1rem); letter-spacing: .09em; color: #efd08b; }
+.table-celebration span { margin-top: 6px; font-size: 1rem; color: #f4f5ed; overflow-wrap: anywhere; }
+.table-celebration.all-in { background: #57271ff5; border-color: #f5ac70; }
+.table-celebration.all-in strong { color: #ffd1a7; }
+.table-celebration.all-in-win { background: #332a12f5; border: 2px solid #ffda7b; box-shadow: 0 0 48px #f6c75766, 0 12px 40px #0009; }
+.table-celebration.all-in-win strong { color: #ffe5a4; }
+.table-celebration i { position: absolute; left: var(--x); top: 0; width: 7px; height: 13px; background: #ffd775; animation: victory-confetti 1.8s var(--delay) ease-out both; }
+.table-celebration i:nth-child(3n) { background: #66d7c0; }
+@keyframes table-moment { from { opacity: 0; transform: translateX(-50%) scale(.84); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+@keyframes victory-confetti { 0% { opacity: 0; transform: translateY(0) rotate(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--drift), 180px) rotate(310deg); } }
+@media (prefers-reduced-motion: reduce) { .table-celebration, .table-celebration i { animation: none; } }
