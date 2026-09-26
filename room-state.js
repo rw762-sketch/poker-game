@@ -1,6 +1,6 @@
-import { Poker } from './engine.js?v=c9e90005af1b';
+import { Poker } from './engine.js?v=84376ad4c004';
 
-import { botObservation, chooseBotAction } from './ai.js?v=c9e90005af1b';
+import { botObservation, chooseBotAction } from './ai.js?v=84376ad4c004';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;

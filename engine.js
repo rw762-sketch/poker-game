@@ -1,3 +1,4 @@
+import { describeHand, compareHandsText } from './hand-description.js?v=84376ad4c004';
 export const labels=['High card','One pair','Two pair','Three of a kind','Straight','Flush','Full house','Four of a kind','Straight flush'];
 export function compare(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){let d=(a[i]||0)-(b[i]||0);if(d)return d;}return 0;}
 function five(cards){const ranks=cards.map(c=>c.r).sort((a,b)=>b-a),counts={};ranks.forEach(r=>counts[r]=(counts[r]||0)+1);const g=Object.entries(counts).map(([r,n])=>({r:+r,n})).sort((a,b)=>b.n-a.n||b.r-a.r);const flush=cards.every(c=>c.s===cards[0].s);let straight=0;if(g.length===5){if(ranks[0]-ranks[4]===4)straight=ranks[0];else if(ranks.join()==='14,5,4,3,2')straight=5;}if(flush&&straight)return[8,straight];if(g[0].n===4)return[7,g[0].r,g[1].r];if(g[0].n===3&&g[1].n===2)return[6,g[0].r,g[1].r];if(flush)return[5,...ranks];if(straight)return[4,straight];if(g[0].n===3)return[3,...g.map(x=>x.r)];if(g[0].n===2&&g[1].n===2)return[2,...g.map(x=>x.r)];if(g[0].n===2)return[1,...g.map(x=>x.r)];return[0,...ranks];}
@@ -11,6 +12,46 @@ start(shuffleRandom){if(this.players.filter(p=>p.stack>0).length<2)return false;
 options(){let p=this.players[this.turn];if(!p||this.done)return{};let call=Math.max(0,this.current-p.bet),max=p.bet+p.stack;return{call:Math.min(call,p.stack),owed:call,min:Math.min(max,this.current+this.minRaise),max,canRaise:max>this.current&&(this.raiseAt[this.turn]===undefined||this.current-this.raiseAt[this.turn]>=this.minRaise)&&this.players.some((q,i)=>i!==this.turn&&!q.folded&&q.stack>0)};}
 act(type,amount){if(this.done)return false;const i=this.turn,p=this.players[i],o=this.options();if(type==='allin'){if(o.owed>=p.stack)type='call';else if(o.canRaise){type='raise';amount=o.max;}else return false;}if(!['fold','call','raise'].includes(type))return false;if(type==='raise'&&(!o.canRaise||!Number.isInteger(amount)||amount<o.min||amount>o.max))return false;if(type==='fold'){p.folded=true;p.action='Fold';}else if(type==='call'){let paid=this.pay(i,o.owed);p.action=paid?`Call ${paid}`:'Check';}else{let increase=amount-this.current;this.pay(i,amount-p.bet);if(increase>=this.minRaise){this.minRaise=increase;this.acted.clear();this.raiseAt={};}this.current=amount;p.action=`Raise to ${amount}`;}if(!p.stack&&!p.folded)p.action+=' · All in';this.acted.add(i);this.raiseAt[i]=this.current;this.log(`${p.name}: ${p.action}.`);this.advance(true);return true;}
 advance(move){let live=this.players.filter(p=>!p.folded);if(live.length===1){live[0].stack+=this.pot;this.awards=[{seat:this.players.indexOf(live[0]),amount:this.pot,profit:this.pot-live[0].total,allIn:!!live[0].allIn}];this.result=`${live[0].name} wins ${this.pot} chips. Everyone else folded.`;this.finish();return;}let needs=(p,i)=>!p.folded&&p.stack>0&&(!this.acted.has(i)||p.bet<this.current);const active=live.filter(p=>p.stack>0);if(active.length<=1&&active.every(p=>p.bet>=this.current)){while(this.board.length<5)this.board.push(this.deck.pop());this.showdown();return;}if(!this.players.some(needs)){if(this.stage===3){this.showdown();return;}this.stage++;this.deck.pop();for(let n=0;n<(this.stage===1?3:1);n++)this.board.push(this.deck.pop());this.players.forEach(p=>{p.bet=0;if(!p.folded)p.action=p.stack?'':'All in';});this.current=0;this.minRaise=20;this.acted.clear();this.raiseAt={};this.turn=this.next(this.dealer,p=>!p.folded&&p.stack>0);this.log(['','Flop','Turn','River'][this.stage]+' dealt.');return;}if(move||!needs(this.players[this.turn],this.turn))this.turn=this.next(this.turn,(p)=>needs(p,this.players.indexOf(p)));}
-showdown(){this.stage=4;let levels=[...new Set(this.players.map(p=>p.total).filter(Boolean))].sort((a,b)=>a-b),prev=0,winnings=new Map();for(const level of levels){let contributors=this.players.filter(p=>p.total>=level),amount=(level-prev)*contributors.length;prev=level;let eligible=contributors.filter(p=>!p.folded);if(!eligible.length)continue;let scores=eligible.map(p=>({p,v:evaluate([...p.cards,...this.board])})).sort((a,b)=>compare(b.v,a.v));let winners=scores.filter(x=>compare(x.v,scores[0].v)===0).map(x=>x.p);winners.sort((a,b)=>((this.players.indexOf(a)-this.dealer+3)%4)-((this.players.indexOf(b)-this.dealer+3)%4));winners.forEach((p,i)=>{let share=Math.floor(amount/winners.length)+(i<amount%winners.length?1:0);p.stack+=share;winnings.set(p,(winnings.get(p)||0)+share);});}this.players.forEach(p=>{if(!p.folded)p.action=labels[evaluate([...p.cards,...this.board])[0]];});this.awards=[...winnings].map(([p,n])=>({seat:this.players.indexOf(p),amount:n,profit:n-p.total,allIn:!!p.allIn}));this.result=[...winnings].map(([p,n])=>`${p.name} wins ${n} with ${p.action.toLowerCase()}`).join(' · ')+'.';this.finish();}
+showdown() {
+  this.stage = 4;
+  const levels = [...new Set(this.players.map(p => p.total).filter(Boolean))].sort((a,b) => a-b);
+  let previous = 0, potNumber = 0;
+  const winnings = new Map(), explanations = [];
+  for (const level of levels) {
+    const contributors = this.players.filter(p => p.total >= level);
+    const amount = (level - previous) * contributors.length;
+    previous = level;
+    const eligible = contributors.filter(p => !p.folded);
+    if (!eligible.length) continue;
+    const scores = eligible.map(p => ({ p, v: evaluate([...p.cards, ...this.board]) }))
+      .sort((a,b) => compare(b.v, a.v));
+    const winners = scores.filter(x => compare(x.v, scores[0].v) === 0).map(x => x.p);
+    winners.sort((a,b) => ((this.players.indexOf(a)-this.dealer+3)%4)-((this.players.indexOf(b)-this.dealer+3)%4));
+    winners.forEach((p,i) => {
+      const share = Math.floor(amount/winners.length) + (i < amount%winners.length ? 1 : 0);
+      p.stack += share;
+      winnings.set(p, (winnings.get(p) || 0) + share);
+    });
+    if (contributors.length === 1) {
+      explanations.push(`${winners[0].name} gets ${amount} uncalled chips back.`);
+      continue;
+    }
+    const potName = levels.length === 1 ? 'the pot' : potNumber === 0 ? 'the main pot' : `side pot ${potNumber}`;
+    potNumber++;
+    const names = winners.map(p => p.name).join(' and ');
+    const losers = scores.filter(x => !winners.includes(x.p));
+    if (winners.length > 1) {
+      explanations.push(`${names} split ${potName} (${amount} chips): the same best five-card hand, ${describeHand(scores[0].v)}.${losers.length ? ' This beats ' + losers.map(x => `${x.p.name}’s ${describeHand(x.v)}`).join(' and ') + '.' : ''}`);
+    } else if (!losers.length) {
+      explanations.push(`${names} wins ${potName} (${amount} chips): everyone else in this pot folded.`);
+    } else {
+      explanations.push(`${names} wins ${potName} (${amount} chips): ` + losers.map(x => `${compareHandsText(scores[0].v, x.v)} (${x.p.name})`).join('; ') + '.');
+    }
+  }
+  this.players.forEach(p => { if (!p.folded) p.action = labels[evaluate([...p.cards, ...this.board])[0]]; });
+  this.awards = [...winnings].map(([p,n]) => ({ seat:this.players.indexOf(p), amount:n, profit:n-p.total, allIn:!!p.allIn }));
+  this.result = explanations.join(' ');
+  this.finish();
+}
 finish(){this.done=true;this.log(this.result);}
 }

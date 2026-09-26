@@ -1,4 +1,4 @@
-import { OpponentModel, validContext } from './opponent-model.js?v=c9e90005af1b';
+import { OpponentModel, validContext } from './opponent-model.js?v=84376ad4c004';
 // Public-action learning only: this module never reads cards or the deck.
 const LIMIT = 120;
 const blank = () => ({ hands:0, vpip:0, pfr:0, faced:0, folds:0, post:0, bets:0, calls:0, sizeTotal:0, sized:0 });

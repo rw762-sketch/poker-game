@@ -1,6 +1,6 @@
-import {Poker} from './engine.js?v=c9e90005af1b';
-import {PlayerMemory} from './player-memory.js?v=c9e90005af1b';
-import {botObservation,chooseBotDecision} from './ai.js?v=c9e90005af1b';
+import {Poker} from './engine.js?v=84376ad4c004';
+import {PlayerMemory} from './player-memory.js?v=84376ad4c004';
+import {botObservation,chooseBotDecision} from './ai.js?v=84376ad4c004';
 export const BOT_NAMES=['Sage','Jules','Morgan','Alex'];
 export class Arena {
  constructor(random=Math.random){this.random=random;this.reset();}

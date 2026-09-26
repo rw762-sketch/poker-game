@@ -1,6 +1,6 @@
-import { inferOpponentRanges } from './range-model.js?v=c9e90005af1b';
-import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=c9e90005af1b';
-import { boardTexture } from './strategy.js?v=c9e90005af1b';
+import { inferOpponentRanges } from './range-model.js?v=84376ad4c004';
+import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=84376ad4c004';
+import { boardTexture } from './strategy.js?v=84376ad4c004';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const deck=Array.from({length:52},(_,i)=>({r:2+i%13,s:Math.floor(i/13)}));
 const key=c=>c.s*13+c.r;
