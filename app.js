@@ -1,12 +1,13 @@
-import { gtoThinkTime } from './gto.js?v=e95c98b86ca5';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e95c98b86ca5';
-import { PlayerMemory } from './player-memory.js?v=e95c98b86ca5';
-import { Poker, evaluate, labels } from './engine.js?v=e95c98b86ca5';
-import { tableSnapshot, animateTable } from './motion.js?v=e95c98b86ca5';
-import { LobbyClient, ServerRoom } from './server-room.js?v=e95c98b86ca5';
-import { bindLobby } from './lobby.js?v=e95c98b86ca5';
-import { OnlineRoom } from './multiplayer.js?v=e95c98b86ca5';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e95c98b86ca5';
+import { gtoThinkTime } from './gto.js?v=9e0c01c60847';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=9e0c01c60847';
+import { PlayerMemory } from './player-memory.js?v=9e0c01c60847';
+import { Poker, evaluate, labels } from './engine.js?v=9e0c01c60847';
+import { tableSnapshot, animateTable } from './motion.js?v=9e0c01c60847';
+import { LobbyClient, ServerRoom } from './server-room.js?v=9e0c01c60847';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=9e0c01c60847';
+import { bindLobby } from './lobby.js?v=9e0c01c60847';
+import { OnlineRoom } from './multiplayer.js?v=9e0c01c60847';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=9e0c01c60847';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
@@ -374,7 +375,7 @@ window.addEventListener('beforeunload', event => {
 window.addEventListener('pagehide', () => room?.close({ leave: false }));
 if (friendsPage) {
   let invited = new URLSearchParams(location.hash.slice(1)).get('room');
-  try { invited ||= sessionStorage.getItem('poker-active-server-room'); } catch {}
+  try { if (MULTIPLAYER_API_URL) invited ||= sessionStorage.getItem('poker-active-server-room'); } catch {}
   if (invited) {
     $('joinCode').value = invited.slice(0, 8).toUpperCase();
     const inviteParams = new URLSearchParams(location.hash.slice(1));

@@ -134,3 +134,13 @@ test('overlapping lobby entry and room entry share a single session identity', a
   finish({ ok: true, headers: new Headers({ 'content-type': 'application/json' }), json: async () => ({ token: 'same-session' }) });
   assert.deepEqual(await lobby, await join); assert.equal(client.token, 'same-session');
 });
+
+test('static GitHub Pages does not attempt calls to an unhosted lobby', async () => {
+  const { defaultMultiplayerApi } = await import('../network-config.js');
+  assert.equal(defaultMultiplayerApi('rw762-sketch.github.io'), '');
+  assert.equal(defaultMultiplayerApi('localhost'), '/api');
+  let requests = 0;
+  const client = new LobbyClient({ base: '', storage: null, request: () => { requests++; } });
+  await assert.rejects(client.enter('Alice'), /not hosted/);
+  assert.equal(requests, 0);
+});

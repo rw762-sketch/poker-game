@@ -1,6 +1,17 @@
 export function bindLobby(client, getRoom) {
   const $ = id => document.getElementById(id);
   let timer, busy = false, generation = 0;
+  if (!client.base) {
+    const invite = new URLSearchParams(location.hash.slice(1));
+    const serverInvite = invite.has('room') && invite.get('mode') === 'server';
+    $('connectionMode').value = serverInvite ? 'server' : 'direct';
+    const option = $('connectionMode').querySelector('option[value="server"]');
+    option.disabled = true; option.textContent = 'Server connection (not hosted here)';
+    $('connectionNotice').hidden = false;
+    $('connectionNotice').textContent = serverInvite
+      ? 'This invite needs a server-hosted game link. This address supports direct rooms only. Ask your friend for the correct link.'
+      : 'This address supports direct rooms. Create a room and share its invite. The shared online-player lobby is not hosted here yet.';
+  }
   try { $('nickname').value = sessionStorage.getItem('poker-lobby-name') || ''; } catch {}
   function row(name, detail) {
     const element = document.createElement('li');
@@ -58,10 +69,16 @@ export function bindLobby(client, getRoom) {
     const direct = $('connectionMode').value === 'direct';
     $('onlineLobby').hidden = direct; $('enterLobby').hidden = direct;
     $('directConnectionNote').hidden = !direct;
-    $('createRoom').disabled = $('joinRoom').disabled = !!getRoom();
+    const unavailable = !direct && !client.base;
+    $('createRoom').disabled = $('joinRoom').disabled = !!getRoom() || unavailable;
+    $('enterLobby').disabled = $('refreshLobby').disabled = unavailable;
+    if (unavailable) {
+      $('presenceStatus').textContent = 'Shared lobby unavailable on this address.';
+      $('onlineCount').textContent = '—';
+    }
     $('connectionMode').disabled = !!getRoom();
     if (direct) { clearTimeout(timer); generation++; $('createRoom').textContent = 'Create a room'; }
-    else refresh(true);
+    else if (!unavailable) refresh(true);
   }
   $('enterLobby').onclick = () => refresh(true);
   $('refreshLobby').onclick = () => refresh(true);

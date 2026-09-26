@@ -1,4 +1,4 @@
-import { MULTIPLAYER_API_URL } from './network-config.js?v=e95c98b86ca5';
+import { MULTIPLAYER_API_URL } from './network-config.js?v=9e0c01c60847';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 export class LobbyClient {
@@ -8,6 +8,7 @@ export class LobbyClient {
     try { this.token = storage?.getItem('poker-lobby-token') || ''; } catch { this.token = ''; }
   }
   async request(path, body, { retries = 0 } = {}) {
+    if (!this.base) throw Object.assign(Error('The shared lobby is not hosted on this address. Choose Direct connection to create or join a room.'), { terminal: true });
     let error;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -27,7 +28,7 @@ export class LobbyClient {
       }
     }
     if (error.status || error.terminal) throw error;
-    throw Error('Cannot reach the game server. Check your connection; your seat is kept for 30 minutes.');
+    throw Error('Cannot reach the game server. It may be offline or unavailable from this network.');
   }
   enter(name) {
     // Opening the dialog and joining can overlap. They must share one identity.
