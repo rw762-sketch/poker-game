@@ -1,4 +1,4 @@
-import { Poker } from './engine.js?v=8b385c1c879f';
+import { Poker } from './engine.js?v=e95c98b86ca5';
 
 export const MAX_PLAYERS = 4;
 export const TURN_MS = 45000;
@@ -77,10 +77,10 @@ export class HostTable {
     if (!this.game.act(message.action, message.amount)) throw Error('That bet is not allowed.');
     this.changed(now);
   }
-  tick(now = Date.now()) {
+  tick(now = Date.now(), offlineMs = OFFLINE_MS, includeHost = false) {
     let changed = false;
     this.members.forEach((m, i) => {
-      if (i > 0 && m?.online && now - m.seen > OFFLINE_MS) {
+      if ((i > 0 || includeHost) && m?.online && now - m.seen > offlineMs) {
         m.online = false;
         this.version++;
         changed = true;
@@ -88,7 +88,7 @@ export class HostTable {
     });
     if (!this.game.done) {
       const member = this.members[this.game.turn];
-      if (now >= this.deadline || (!member?.online && now - (member?.seen || 0) >= OFFLINE_MS)) {
+      if (now >= this.deadline || (!member?.online && now - (member?.seen || 0) >= offlineMs)) {
         const player = this.game.players[this.game.turn];
         this.game.log(`${player.name} timed out.`);
         this.game.act(this.game.options().owed ? 'fold' : 'call');

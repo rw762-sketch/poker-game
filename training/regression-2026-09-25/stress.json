@@ -1,0 +1,9 @@
+{
+  "mode": "stress",
+  "tables": 600,
+  "hands": 5939,
+  "actions": 57583,
+  "seedStart": 3300000,
+  "correctnessFailures": 0,
+  "elapsedSeconds": 45.096
+}

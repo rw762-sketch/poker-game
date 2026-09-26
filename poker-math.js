@@ -68,15 +68,32 @@ export function validateScenario({ cards, board = [], opponents = 1, knownOppone
   }
 }
 export function simulateEquity(input, trials = 2000, random = Math.random) {
-  const { cards, board = [], opponents = 1, knownOpponent = [], range = 'random', opponentRanges = [] } = input;
+  const { cards, board = [], opponents = 1, knownOpponent = [], range = 'random', opponentRanges = [], weightedRanges = [] } = input;
   validateScenario({ cards, board, opponents, knownOpponent });
   if (!Number.isInteger(trials) || trials < 1 || trials > 100000) throw Error('Invalid simulation size.');
   if (!RANGE_PROFILES[range] || opponentRanges.some(r => !RANGE_PROFILES[r])) throw Error('Unknown opponent range.');
   const used = new Set([...cards, ...board, ...knownOpponent].map(c => c.s * 13 + c.r));
   const unseen = [];
   for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) if (!used.has(s * 13 + r)) unseen.push({ r, s });
+  if (!Array.isArray(weightedRanges) || weightedRanges.length > opponents) throw Error('Invalid weighted ranges.');
+  const unseenIndex = new Map(unseen.map((c,i)=>[c.s*13+c.r,i]));
   const candidates = Array.from({ length:opponents }, (_, index) => {
     if (knownOpponent.length) return [];
+    if (weightedRanges[index]) {
+      const supplied=weightedRanges[index];
+      if(!Array.isArray(supplied)||!supplied.length||supplied.length>1326)throw Error('Invalid weighted range.');
+      const pairs=[],cumulative=[],seenPairs=new Set();let total=0;
+      for(const item of supplied){
+        if(!Array.isArray(item.cards)||item.cards.length!==2||!Number.isFinite(item.weight)||item.weight<0||item.weight>1e12)throw Error('Invalid weighted combination.');
+        if(item.cards.some(c=>!c||!Number.isInteger(c.r)||c.r<2||c.r>14||!Number.isInteger(c.s)||c.s<0||c.s>3))throw Error('Invalid weighted card.');
+        const pair=item.cards.map(c=>unseenIndex.get(c.s*13+c.r)).sort((a,b)=>a-b);
+        if(pair.some(i=>i===undefined)||pair[0]===pair[1]||seenPairs.has(pair.join(',')))throw Error('Conflicting weighted cards.');
+        seenPairs.add(pair.join(','));if(!item.weight)continue;
+        pairs.push(pair);total+=item.weight;cumulative.push(total);
+      }
+      if(!total)throw Error('Weighted range has no probability mass.');
+      return {pairs,cumulative,total};
+    }
     const cutoff = RANGE_PROFILES[opponentRanges[index] || range].cutoff;
     if (!cutoff) return null;
     const result = [];
@@ -94,7 +111,11 @@ export function simulateEquity(input, trials = 2000, random = Math.random) {
     for (let i = 0; i < opponents; i++) {
       if (knownOpponent.length) { hands.push(knownOpponent); continue; }
       let a, b;
-      if (candidates[i]) [a, b] = candidates[i][Math.floor(random() * candidates[i].length)];
+      if(candidates[i]?.pairs){
+        const pool=candidates[i],target=random()*pool.total;let low=0,high=pool.cumulative.length-1;
+        while(low<high){const mid=(low+high)>>1;if(target<pool.cumulative[mid])high=mid;else low=mid+1;}
+        [a,b]=pool.pairs[low];
+      } else if (candidates[i]) [a, b] = candidates[i][Math.floor(random() * candidates[i].length)];
       else { a = Math.floor(random() * unseen.length); b = Math.floor(random() * (unseen.length - 1)); if (b >= a) b++; }
       if (taken.has(a) || taken.has(b)) { conflict = true; break; }
       taken.add(a); taken.add(b); hands.push([unseen[a], unseen[b]]);

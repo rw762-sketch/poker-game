@@ -219,3 +219,18 @@ dialog p { color: #b8c5ca; }
 .drink-art{display:grid;place-items:center;font-size:30px;height:43px;margin-bottom:7px}.drink-name{font-size:12px;font-weight:600;line-height:1.4}.drink-note{font-size:10px;color:var(--muted);line-height:1.4;margin-top:4px}.drink-check{display:none;position:absolute;right:8px;top:5px;color:var(--gold);font-size:12px}.drink-card:has(input:checked) .drink-check{display:block}
 .drinks-footer{flex-shrink:0;border-top:1px solid var(--border);padding-top:12px;margin-top:2px}.drinks-footer .primary{width:100%;min-height:46px;border:0;border-radius:9px;background:var(--gold);color:#18211b;font-weight:650}.drinks-footer p{margin:8px 0 0;font-size:11px;text-align:center;color:var(--muted)}#drinkError:not(:empty){margin:0 0 10px;color:#f1bc8b}
 @media(max-width:600px){.seat-drink{width:32px;height:36px;padding:6px;left:calc(100% + 3px)}.seat-3 .seat-drink{right:calc(100% + 3px)}#drinksDialog{padding:18px}.drink-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.drink-card{min-height:115px}.on-house{font-size:8px;letter-spacing:.8px}}
+
+/* Shared online lobby, matching the table's dark teal surfaces. */
+#connectionMode { width: 100%; min-height: 44px; padding: 10px; color: var(--text); background: #142429; border: 1px solid #46615f; border-radius: 8px; font: inherit; }
+#onlineLobby { border-block: 1px solid #46615f; padding: 16px 0; margin: 12px 0; }
+#onlineLobby h3 { font-size: 16px; margin: 12px 0; }
+#presenceStatus { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.lobby-heading, .lobby-table { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#onlineCount { color: var(--gold); padding-left: 6px; }
+.online-players { list-style: none; padding: 0; margin: 8px 0 20px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; max-height: 220px; overflow-y: auto; }
+.online-players li, .lobby-table { background: #142429; padding: 12px; border-radius: 8px; }
+.online-players strong, .lobby-table strong { display: block; font-size: 16px; overflow-wrap: anywhere; }
+.online-players span, .lobby-table span { display: block; color: var(--muted); font-size: 14px; margin-top: 4px; }
+.public-rooms { display: grid; gap: 8px; max-height: 260px; overflow-y: auto; }
+.lobby-table button { flex-shrink: 0; }
+@media (max-width: 440px) { .online-players { grid-template-columns: 1fr; } }

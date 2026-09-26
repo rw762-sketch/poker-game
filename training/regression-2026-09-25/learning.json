@@ -1,0 +1,120 @@
+{
+  "seedMix": "32-bit avalanche",
+  "hands": 6000,
+  "independentSessions": 10,
+  "responses": 38088,
+  "totalActions": 71006,
+  "seedStart": 4400000,
+  "method": "Prequential prediction: train only on prior completed hands, retain at most 120 hands, switch opponent styles halfway through each session. Compare confidence-blended ML predictions to smoothed fold-rate baseline.",
+  "sessions": [
+    {
+      "session": 0,
+      "responses": 3799,
+      "modelBrier": 0.19224729929293888,
+      "baselineBrier": 0.1949822682610332,
+      "delta": -0.002734968968094342,
+      "activePredictions": 3649
+    },
+    {
+      "session": 1,
+      "responses": 3782,
+      "modelBrier": 0.19000690969998504,
+      "baselineBrier": 0.19268732326683533,
+      "delta": -0.0026804135668502837,
+      "activePredictions": 3636
+    },
+    {
+      "session": 2,
+      "responses": 3821,
+      "modelBrier": 0.18936164584146364,
+      "baselineBrier": 0.19240722087285364,
+      "delta": -0.0030455750313899852,
+      "activePredictions": 3683
+    },
+    {
+      "session": 3,
+      "responses": 3781,
+      "modelBrier": 0.18987336466532329,
+      "baselineBrier": 0.1931265738410968,
+      "delta": -0.003253209175773526,
+      "activePredictions": 3633
+    },
+    {
+      "session": 4,
+      "responses": 3763,
+      "modelBrier": 0.1877088140355458,
+      "baselineBrier": 0.1909707784145941,
+      "delta": -0.0032619643790483045,
+      "activePredictions": 3628
+    },
+    {
+      "session": 5,
+      "responses": 3808,
+      "modelBrier": 0.18653084445038567,
+      "baselineBrier": 0.19031478995728907,
+      "delta": -0.0037839455069033977,
+      "activePredictions": 3664
+    },
+    {
+      "session": 6,
+      "responses": 3744,
+      "modelBrier": 0.19048188936655014,
+      "baselineBrier": 0.19466530707538351,
+      "delta": -0.004183417708833377,
+      "activePredictions": 3608
+    },
+    {
+      "session": 7,
+      "responses": 3884,
+      "modelBrier": 0.18761194698556308,
+      "baselineBrier": 0.19005994565489018,
+      "delta": -0.002447998669327107,
+      "activePredictions": 3744
+    },
+    {
+      "session": 8,
+      "responses": 3857,
+      "modelBrier": 0.1820992723038,
+      "baselineBrier": 0.1864366956771507,
+      "delta": -0.0043374233733507305,
+      "activePredictions": 3713
+    },
+    {
+      "session": 9,
+      "responses": 3849,
+      "modelBrier": 0.18238048740961957,
+      "baselineBrier": 0.18522182832765097,
+      "delta": -0.0028413409180314013,
+      "activePredictions": 3708
+    }
+  ],
+  "phases": {
+    "warmup": {
+      "responses": 2529,
+      "modelBrier": 0.20054336891548283,
+      "baselineBrier": 0.201435432455283
+    },
+    "established": {
+      "responses": 28047,
+      "modelBrier": 0.18541227689079207,
+      "baselineBrier": 0.18908865679798503
+    },
+    "shift": {
+      "responses": 7512,
+      "modelBrier": 0.19246931059561773,
+      "baselineBrier": 0.1949477562406651
+    }
+  },
+  "meanSessionBrierDelta": -0.0032570257297602446,
+  "sessionClusterInterval95": [
+    -0.0037206100134968513,
+    -0.002793441446023638
+  ],
+  "elapsedSeconds": 24.207,
+  "limitations": [
+    "Synthetic responses; no human accuracy claim.",
+    "Prediction scores do not establish poker profitability.",
+    "Confidence-blended probability is an evaluation diagnostic; live policy blends bluff frequencies instead.",
+    "No benchmark hand histories or weights are installed into player browser storage."
+  ]
+}

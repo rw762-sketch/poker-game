@@ -1,0 +1,215 @@
+{
+  "seedMix": "32-bit avalanche",
+  "mode": "paired",
+  "hands": 24000,
+  "pairedHands": 12000,
+  "seedStart": 2200000,
+  "baseline": "15ffc56",
+  "candidate": "4827998",
+  "productionRollouts": true,
+  "rows": [
+    {
+      "style": "caller",
+      "current": {
+        "n": 2000,
+        "mean": 2.9228500000000004,
+        "se": 0.3980032832722614,
+        "interval95": [
+          2.142763564786368,
+          3.702936435213633
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 2.9228500000000004,
+        "se": 0.3980032832722614,
+        "interval95": [
+          2.142763564786368,
+          3.702936435213633
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0,
+        "se": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "style": "folder",
+      "current": {
+        "n": 2000,
+        "mean": 0.8401500000000003,
+        "se": 0.12386638639917376,
+        "interval95": [
+          0.5973718826576198,
+          1.0829281173423808
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 0.8142500000000003,
+        "se": 0.12330212457907161,
+        "interval95": [
+          0.5725778358250199,
+          1.0559221641749805
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0.0259,
+        "se": 0.013074165820653533,
+        "interval95": [
+          0.00027463499151907447,
+          0.05152536500848093
+        ]
+      }
+    },
+    {
+      "style": "selective",
+      "current": {
+        "n": 2000,
+        "mean": 0.8650999999999994,
+        "se": 0.19230824143770353,
+        "interval95": [
+          0.4881758467821005,
+          1.2420241532178984
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 0.8548249999999995,
+        "se": 0.1902811142386588,
+        "interval95": [
+          0.4818740160922283,
+          1.2277759839077707
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0.010275000000000005,
+        "se": 0.018999594192435295,
+        "interval95": [
+          -0.026964204617173172,
+          0.047514204617173185
+        ]
+      }
+    },
+    {
+      "style": "pressure",
+      "current": {
+        "n": 2000,
+        "mean": 1.476,
+        "se": 0.44894597474988046,
+        "interval95": [
+          0.5960658894902343,
+          2.3559341105097658
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 1.476,
+        "se": 0.44894597474988046,
+        "interval95": [
+          0.5960658894902343,
+          2.3559341105097658
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0,
+        "se": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "style": "min-raise",
+      "current": {
+        "n": 2000,
+        "mean": 3.0165,
+        "se": 0.652464630399198,
+        "interval95": [
+          1.737669324417572,
+          4.295330675582428
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 3.0165,
+        "se": 0.652464630399198,
+        "interval95": [
+          1.737669324417572,
+          4.295330675582428
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0,
+        "se": 0,
+        "interval95": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "style": "medium",
+      "current": {
+        "n": 2000,
+        "mean": 0.2883,
+        "se": 0.17121964223752126,
+        "interval95": [
+          -0.047290498785541646,
+          0.6238904987855416
+        ]
+      },
+      "previous": {
+        "n": 2000,
+        "mean": 0.282675,
+        "se": 0.17295282416566923,
+        "interval95": [
+          -0.0563125353647117,
+          0.6216625353647117
+        ]
+      },
+      "pairedDelta": {
+        "n": 2000,
+        "mean": 0.005625,
+        "se": 0.023724327736539506,
+        "interval95": [
+          -0.04087468236361743,
+          0.052124682363617426
+        ]
+      }
+    }
+  ],
+  "pairedDelta": {
+    "n": 12000,
+    "mean": 0.006966666666666666,
+    "se": 0.0055140335114730816,
+    "interval95": [
+      -0.0038408390158205727,
+      0.017774172349153905
+    ]
+  },
+  "counts": {
+    "actions": 25404,
+    "folds": 7651,
+    "bluffs": 150,
+    "raises": 2969
+  },
+  "correctnessFailures": 0,
+  "elapsedSeconds": 134.36,
+  "limitations": [
+    "Six synthetic opponent tables; not human or equilibrium performance.",
+    "Intervals describe these fixed independent seeded hands and equal matchup weights.",
+    "Per-matchup intervals are descriptive; no multiple-comparison significance claim.",
+    "Fresh stacks each hand; four hero seats and dealer positions rotated."
+  ]
+}

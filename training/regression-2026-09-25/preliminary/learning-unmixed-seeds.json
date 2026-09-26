@@ -1,0 +1,119 @@
+{
+  "hands": 6000,
+  "sessions": [
+    {
+      "session": 0,
+      "responses": 3685,
+      "modelBrier": 0.18904479113557784,
+      "baselineBrier": 0.19229048365485782,
+      "delta": -0.0032456925192799837,
+      "activePredictions": 3544
+    },
+    {
+      "session": 1,
+      "responses": 3753,
+      "modelBrier": 0.1922555018339719,
+      "baselineBrier": 0.19451483789644786,
+      "delta": -0.002259336062475968,
+      "activePredictions": 3615
+    },
+    {
+      "session": 2,
+      "responses": 3797,
+      "modelBrier": 0.18416044381169125,
+      "baselineBrier": 0.18823361583587578,
+      "delta": -0.004073172024184515,
+      "activePredictions": 3645
+    },
+    {
+      "session": 3,
+      "responses": 3899,
+      "modelBrier": 0.19110088462324118,
+      "baselineBrier": 0.1939261972737595,
+      "delta": -0.002825312650518351,
+      "activePredictions": 3745
+    },
+    {
+      "session": 4,
+      "responses": 3738,
+      "modelBrier": 0.18825949205550851,
+      "baselineBrier": 0.19174536268494125,
+      "delta": -0.0034858706294327163,
+      "activePredictions": 3598
+    },
+    {
+      "session": 5,
+      "responses": 3845,
+      "modelBrier": 0.19233762528326243,
+      "baselineBrier": 0.19445453036897428,
+      "delta": -0.0021169050857118795,
+      "activePredictions": 3704
+    },
+    {
+      "session": 6,
+      "responses": 3749,
+      "modelBrier": 0.18771646957251473,
+      "baselineBrier": 0.19148562412416809,
+      "delta": -0.0037691545516533678,
+      "activePredictions": 3602
+    },
+    {
+      "session": 7,
+      "responses": 3701,
+      "modelBrier": 0.18737736068032523,
+      "baselineBrier": 0.1900460192138064,
+      "delta": -0.002668658533481159,
+      "activePredictions": 3565
+    },
+    {
+      "session": 8,
+      "responses": 3826,
+      "modelBrier": 0.18819002215354322,
+      "baselineBrier": 0.19137691631124368,
+      "delta": -0.0031868941577004716,
+      "activePredictions": 3684
+    },
+    {
+      "session": 9,
+      "responses": 3799,
+      "modelBrier": 0.184867529492541,
+      "baselineBrier": 0.18878959589264666,
+      "delta": -0.003922066400105641,
+      "activePredictions": 3673
+    }
+  ],
+  "responses": 37792,
+  "totalActions": 70746,
+  "seedStart": 4400000,
+  "method": "Prequential prediction: train only on prior completed hands, retain at most 120 hands, switch opponent styles halfway through each session. Compare confidence-blended ML predictions to smoothed fold-rate baseline.",
+  "phases": {
+    "warmup": {
+      "responses": 2534,
+      "modelBrier": 0.19554217327054702,
+      "baselineBrier": 0.1962873927467841
+    },
+    "established": {
+      "responses": 27644,
+      "modelBrier": 0.1867426057557268,
+      "baselineBrier": 0.19028716722254765
+    },
+    "shift": {
+      "responses": 7614,
+      "modelBrier": 0.19273964060443127,
+      "baselineBrier": 0.19527668912689064
+    }
+  },
+  "meanSessionBrierDelta": -0.003155306261454406,
+  "sessionClusterInterval95": [
+    -0.0036411778037806265,
+    -0.0026694347191281854
+  ],
+  "elapsedSeconds": 24.07,
+  "limitations": [
+    "Synthetic responses; no human accuracy claim.",
+    "Prediction scores do not establish poker profitability.",
+    "Confidence-blended probability is an evaluation diagnostic; live policy blends bluff frequencies instead.",
+    "No benchmark hand histories or weights are installed into player browser storage."
+  ],
+  "independentSessions": 10
+}

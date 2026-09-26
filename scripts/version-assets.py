@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib
 import re
 
-root = Path(__file__).resolve().parents[1] 
+root = Path(__file__).resolve().parents[1]
 files = sorted(p for p in root.iterdir() if p.suffix in {'.js', '.css', '.html'})
 canonical = {p: re.sub(r'\?v=[a-f0-9]{12}', '', p.read_text()) for p in files}
 version = hashlib.sha256(''.join(p.name + canonical[p] for p in files).encode()).hexdigest()[:12]

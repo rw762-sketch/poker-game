@@ -1,15 +1,18 @@
-import { gtoThinkTime } from './gto.js?v=8b385c1c879f';
-import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=8b385c1c879f';
-import { PlayerMemory } from './player-memory.js?v=8b385c1c879f';
-import { Poker, evaluate, labels } from './engine.js?v=8b385c1c879f';
-import { tableSnapshot, animateTable } from './motion.js?v=8b385c1c879f';
-import { OnlineRoom } from './multiplayer.js?v=8b385c1c879f';
-import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=8b385c1c879f';
+import { gtoThinkTime } from './gto.js?v=e95c98b86ca5';
+import { DRINKS, TableGifts, validGift } from './table-gifts.js?v=e95c98b86ca5';
+import { PlayerMemory } from './player-memory.js?v=e95c98b86ca5';
+import { Poker, evaluate, labels } from './engine.js?v=e95c98b86ca5';
+import { tableSnapshot, animateTable } from './motion.js?v=e95c98b86ca5';
+import { LobbyClient, ServerRoom } from './server-room.js?v=e95c98b86ca5';
+import { bindLobby } from './lobby.js?v=e95c98b86ca5';
+import { OnlineRoom } from './multiplayer.js?v=e95c98b86ca5';
+import { DIFFICULTIES, normalizeDifficulty, botObservation, chooseBotAction } from './ai.js?v=e95c98b86ca5';
 let selectedDifficulty = 'medium';
 try { selectedDifficulty = normalizeDifficulty(localStorage.getItem('river-room-difficulty')); } catch {}
 let handDifficulty = selectedDifficulty;
 
 const $ = id => document.getElementById(id);
+const friendsPage = document.body.classList.contains('friends-page');
 const suits = ['♠', '♥', '♣', '♦'];
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 let game = new Poker();
@@ -148,8 +151,8 @@ function act(action, amount) {
     connectionMessage = '';
     try {
       room.action(action, amount);
-      // Host updates synchronously; guests await authoritative state.
-      if (!room.host) {
+      // Direct hosts update synchronously; all server players await acknowledgement.
+      if (!room.host || room.server) {
         $('actions').querySelectorAll('button, input').forEach(el => el.disabled = true);
         pendingTimer = setTimeout(() => showRoomError('No response yet. Check the connection before trying again.'), 8000);
       }
@@ -162,7 +165,7 @@ function deal() {
 }
 function schedule() {
   clearTimeout(timer);
-  if (room || game.done || game.turn === 0 || $('multiplayerDialog').open) return;
+  if (friendsPage || room || game.done || game.turn === 0) return;
   timer = setTimeout(() => {
     if (room) return;
     const decision = chooseBotAction(botObservation(game, playerMemory), handDifficulty);
@@ -188,10 +191,11 @@ function renderRoom() {
   renderDifficulty();
   $('roomBar').hidden = !room?.view;
   $('restart').textContent = room ? 'Leave room' : 'New table';
-  $('multiplayer').hidden = !!room;
+  $('multiplayer').hidden = friendsPage && !room?.view;
+  $('multiplayer').textContent = room ? 'Online lobby' : 'Play with friends';
   $('roomCode').textContent = room?.code || '';
-  $('roomMessage').textContent = connectionMessage || (room?.host ? 'You’re the host. Keep this tab open.' : 'Connected to your friends.');
-  $('reconnect').hidden = !room || room.host || room.connected;
+  $('roomMessage').textContent = connectionMessage || (room?.server ? 'Connected through the game server.' : room?.host ? 'You’re the host. Keep this tab open.' : 'Connected to your friends.');
+  $('reconnect').hidden = !room || (room.host && !room.server) || room.connected;
   $('turnClock').hidden = !room?.view?.deadline || room.view.done;
   updateClock();
 }
@@ -266,73 +270,93 @@ $('drinksForm').onsubmit = event => {
 };
 $('help').onclick = () => $('rules').showModal();
 $('closeHelp').onclick = () => $('rules').close();
-$('multiplayer').onclick = () => { clearTimeout(timer); $('multiplayerDialog').showModal(); };
-function cancelLobby() {
-  if (room && !room.view) { const pending = room; room = null; pending.close(); lastFrame = null; render(); }
-  $('multiplayerDialog').close();
-}
-$('closeMultiplayer').onclick = cancelLobby;
-$('multiplayerDialog').addEventListener('cancel', event => { event.preventDefault(); cancelLobby(); });
-$('multiplayerDialog').addEventListener('close', () => { if (!room) schedule(); });
-$('multiplayerForm').onsubmit = async event => {
-  event.preventDefault();
-  if (room) return;
-  const name = $('nickname').value.trim();
-  if (!name) { $('nickname').focus(); return; }
-  const create = event.submitter?.id === 'createRoom';
-  const code = $('joinCode').value.trim();
-  if (!create && !code) { $('lobbyError').textContent = 'Enter the room code your friend shared.'; $('joinCode').focus(); return; }
-  $('lobbyError').textContent = create ? 'Opening your table…' : 'Connecting to your friend…';
-  $('createRoom').disabled = $('joinRoom').disabled = true;
+let lobby;
+function openLobby() {
   clearTimeout(timer);
-  const session = new OnlineRoom({
-    onGift: gift => { if (room === session) receiveGift(gift); },
-    onState: () => {
-      if (room !== session) return;
-      pendingAction = false;
-      clearTimeout(pendingTimer);
-      render();
-    },
-    onStatus: message => { if (room === session) { if (!session.view) { $('lobbyError').textContent = message; return; } connectionMessage = message; render(); } },
-    onError: message => { if (room === session) { if (!session.view) $('lobbyError').textContent = message; else showRoomError(message); } },
-  });
-  room = session;
-  lastFrame = null;
-  connectionMessage = '';
-  try {
-    if (create) await session.create(name);
-    else await session.join(name, code);
-    if (room !== session) return;
-    $('multiplayerDialog').close();
-    $('lobbyError').textContent = '';
-    renderRoom();
-  } catch (error) {
-    if (room !== session) return;
-    session.close();
-    room = null;
+  $('friendsLobby').hidden = false;
+  $('gameSurface').hidden = true;
+  $('closeMultiplayer').hidden = !room?.view;
+  lobby.open();
+  $('friendsTitle').focus({ preventScroll: true });
+}
+function closeLobby() {
+  $('friendsLobby').hidden = true;
+  $('gameSurface').hidden = false;
+  lobby.close();
+  $('gameSurface').setAttribute('tabindex', '-1');
+  $('gameSurface').focus({ preventScroll: true });
+}
+$('multiplayer').onclick = () => {
+  if (friendsPage) openLobby();
+  else location.href = 'friends.html';
+};
+if (friendsPage) {
+  const lobbyClient = new LobbyClient();
+  lobby = bindLobby(lobbyClient, () => room);
+  document.querySelector('.app-nav a[aria-current="page"]').addEventListener('click', event => { event.preventDefault(); openLobby(); });
+  $('closeMultiplayer').onclick = () => { if (room?.view) closeLobby(); };
+  $('multiplayerForm').onsubmit = async event => {
+    event.preventDefault();
+    if (room) return;
+    const name = $('nickname').value.trim();
+    if (!name) { $('nickname').focus(); return; }
+    const create = event.submitter?.id === 'createRoom';
+    const code = $('joinCode').value.trim();
+    if (!create && !code) { $('lobbyError').textContent = 'Enter the room code your friend shared.'; $('joinCode').focus(); return; }
+    $('lobbyError').textContent = create ? 'Opening your table…' : 'Connecting to your friend…';
+    $('createRoom').disabled = $('joinRoom').disabled = true;
+    clearTimeout(timer);
+    const RoomClass = $('connectionMode').value === 'direct' ? OnlineRoom : ServerRoom;
+    const session = new RoomClass({
+      client: lobbyClient,
+      onGift: gift => { if (room === session) receiveGift(gift); },
+      onState: () => {
+        if (room !== session) return;
+        pendingAction = false;
+        clearTimeout(pendingTimer);
+        render();
+      },
+      onStatus: message => { if (room === session) { if (!session.view) { $('lobbyError').textContent = message; return; } connectionMessage = message; render(); } },
+      onError: message => { if (room === session) { if (!session.view) $('lobbyError').textContent = message; else showRoomError(message); } },
+    });
+    room = session;
     lastFrame = null;
-    $('lobbyError').textContent = error.message;
-    render();
-    schedule();
-  } finally { $('createRoom').disabled = $('joinRoom').disabled = false; }
-};
-$('copyInvite').onclick = async () => {
-  if (!room) return;
-  const url = new URL(location.href);
-  url.hash = `room=${room.code}`;
-  try { await navigator.clipboard.writeText(url.href); connectionMessage = 'Invite link copied. Send it to your friends.'; }
-  catch { connectionMessage = `Share room code ${room.code} with your friends.`; }
-  renderRoom();
-};
-$('reconnect').onclick = async () => {
-  if (!room) return;
-  $('reconnect').disabled = true;
-  connectionMessage = 'Reconnecting…';
-  renderRoom();
-  try { await room.reconnect(); connectionMessage = ''; render(); }
-  catch (error) { showRoomError(error.message); }
-  finally { $('reconnect').disabled = false; }
-};
+    connectionMessage = '';
+    try {
+      if (create) await session.create(name);
+      else await session.join(name, code);
+      if (room !== session) return;
+      closeLobby();
+      $('lobbyError').textContent = '';
+      renderRoom();
+    } catch (error) {
+      if (room !== session) return;
+      session.close();
+      room = null;
+      lastFrame = null;
+      $('lobbyError').textContent = error.message;
+      render();
+      schedule();
+    } finally { $('createRoom').disabled = $('joinRoom').disabled = false; }
+  };
+  $('copyInvite').onclick = async () => {
+    if (!room) return;
+    const url = new URL(location.href);
+    url.hash = `room=${room.code}&mode=${room.server ? 'server' : 'direct'}`;
+    try { await navigator.clipboard.writeText(url.href); connectionMessage = 'Invite link copied. Send it to your friends.'; }
+    catch { connectionMessage = `Share room code ${room.code} with your friends.`; }
+    renderRoom();
+  };
+  $('reconnect').onclick = async () => {
+    if (!room) return;
+    $('reconnect').disabled = true;
+    connectionMessage = 'Reconnecting…';
+    renderRoom();
+    try { await room.reconnect(); connectionMessage = ''; render(); }
+    catch (error) { showRoomError(error.message); }
+    finally { $('reconnect').disabled = false; }
+  };
+}
 $('restart').onclick = () => {
   if (!confirm(room ? (room.host ? 'Close this room for everyone?' : 'Leave this room?') : 'Start a new table with 1,000 chips each?')) return;
   room?.close();
@@ -342,18 +366,23 @@ $('restart').onclick = () => {
   connectionMessage = '';
   game = new Poker();
   history.replaceState(null, '', location.pathname + location.search);
-  start();
+  if (friendsPage) { renderRoom(); openLobby(); } else start();
 };
 window.addEventListener('beforeunload', event => {
   if (room?.view) { event.preventDefault(); event.returnValue = ''; }
 });
-window.addEventListener('pagehide', () => room?.close());
-start();
-const invited = new URLSearchParams(location.hash.slice(1)).get('room');
-if (invited) {
-  $('joinCode').value = invited.slice(0, 8).toUpperCase();
-  clearTimeout(timer);
-  $('multiplayerDialog').showModal();
+window.addEventListener('pagehide', () => room?.close({ leave: false }));
+if (friendsPage) {
+  let invited = new URLSearchParams(location.hash.slice(1)).get('room');
+  try { invited ||= sessionStorage.getItem('poker-active-server-room'); } catch {}
+  if (invited) {
+    $('joinCode').value = invited.slice(0, 8).toUpperCase();
+    const inviteParams = new URLSearchParams(location.hash.slice(1));
+    $('connectionMode').value = inviteParams.has('room') && inviteParams.get('mode') !== 'server' ? 'direct' : 'server';
+  }
+  openLobby();
+} else {
+  start();
 }
 
 const context = document.modelContext;
@@ -361,6 +390,7 @@ if (context?.registerTool) {
   const lifecycle = new AbortController();
   window.addEventListener('pagehide', () => lifecycle.abort(), { once:true });
   const state = () => {
+    if (friendsPage && !room?.view) return { lobby: true, online: false };
     const v = view();
     return { hand:v.hand, done:v.done, online:!!room, turn:v.done ? null : v.players[v.turn].name,
       board:v.board, holeCards:v.players[0].cards, pot:v.pot,
@@ -378,6 +408,7 @@ if (context?.registerTool) {
     } },
     { name:'deal_next_hand', description:'Deal the next hand after the current hand ends; room host only in multiplayer.', inputSchema:{ type:'object', properties:{}, additionalProperties:false }, annotations:{ readOnlyHint:false }, execute:() => {
       if (room) { room.deal(); return state(); }
+      if (friendsPage) throw Error('Join a table first.');
       if (!game.done || !game.players[0].stack || game.players.filter(p => p.stack > 0).length < 2) throw Error('A next hand is not available.');
       start(); return state();
     } },

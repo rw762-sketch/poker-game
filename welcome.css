@@ -1,0 +1,48 @@
+/* Opening screen and the dedicated friends lobby. */
+.app-header { grid-template-columns: minmax(160px, 1fr) auto auto; gap: 20px; }
+.app-nav { gap: 22px; }
+.app-nav a { white-space: nowrap; }
+.welcome-main { max-width: 1100px; padding-top: clamp(32px, 6vh, 72px); }
+.welcome-heading { margin-bottom: 30px; }
+.welcome-heading h1 { font-size: clamp(34px, 5vw, 54px); letter-spacing: -1.8px; font-weight: 650; }
+.welcome-heading>p:last-child { color: var(--muted); font-size: 17px; margin: 12px 0 0; }
+.play-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.play-choice { display: flex; flex-direction: column; padding: clamp(24px, 4vw, 38px); border: 1px solid #3c6355; border-radius: 18px; background: #17382d; color: var(--text); text-decoration: none; min-width: 0; }
+.play-choice:hover { background: #1f4939; border-color: var(--accent); }
+.solo-choice { background: #1a252c; border-color: #374853; }
+.solo-choice:hover { background: #24343e; border-color: #7b9cab; }
+.choice-label { color: #abdac3; font-size: 12px; letter-spacing: 2px; font-weight: 650; }
+.solo-choice .choice-label { color: #acc7d9; }
+.play-choice h2 { font-size: clamp(32px, 4vw, 46px); line-height: 1.06; letter-spacing: -1.3px; margin: 28px 0 16px; font-weight: 600; }
+.play-choice p { color: #c3d2ce; font-size: 16px; max-width: 320px; margin: 0 0 20px; }
+.choice-details { color: #a9c2b8; font-size: 14px; margin-top: auto; }
+.solo-choice .choice-details { color: #a6b8c4; }
+.choice-action { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #b9e0ce33; font-size: 17px; font-weight: 600; color: #f0d69e; }
+.choice-action>span { font-size: 24px; }
+.practice-links { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+.practice-links>a { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; color: var(--text); text-decoration: none; font-size: 16px; }
+.practice-links>a:hover { background: var(--surface); border-color: #6b818b; }
+.practice-links span { color: var(--muted); font-size: 14px; }
+.welcome-main footer { font-size: 14px; margin-top: 10px; }
+.friends-main { padding-top: 36px; }
+.friends-title { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 28px; }
+.friends-title h1 { font-size: clamp(30px, 4vw, 42px); letter-spacing: -1px; }
+.friends-title p:last-child { color: var(--muted); font-size: 16px; margin: 10px 0 0; }
+.friends-layout { display: grid; grid-template-columns: minmax(260px, 350px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.lobby-setup, .lobby-directory { padding: 26px; border: 1px solid var(--border); background: var(--surface); border-radius: 14px; min-width: 0; }
+.friends-layout h2 { font-size: 20px; margin: 0 0 20px; letter-spacing: -.3px; }
+.friends-layout .lobby-heading h2 { margin: 0; }
+#onlineLobby.lobby-directory { margin: 0; padding: 26px; border: 1px solid var(--border); }
+.friends-layout #multiplayerForm { gap: 12px; }
+.friends-layout #multiplayerForm button { font-size: 15px; min-height: 46px; }
+.friends-layout .online-players { margin-bottom: 28px; max-height: 290px; }
+.friends-layout .public-rooms { max-height: 360px; }
+.page-button, .lobby-table button { min-height: 44px; border: 1px solid #46615f; background: #24363a; color: var(--text); border-radius: 8px; padding: 10px 15px; font-size: 14px; }
+.connection-settings { margin: 4px 0 0; padding-top: 14px; border-top: 1px solid var(--border); }
+.connection-settings summary { margin-bottom: 8px; }
+.connection-settings select { margin-top: 8px; }
+.connection-settings p, #directConnectionNote p { font-size: 14px; line-height: 1.6; color: var(--muted); }
+.friends-layout .room-note { font-size: 14px; }
+@media (max-width: 1050px) { .app-header { display: flex; flex-wrap: wrap; height: auto; padding: 16px 24px 0; gap: 10px 20px; } .app-nav { order: 3; flex-basis: 100%; height: auto; min-height: 46px; flex-wrap: wrap; gap: 0 24px; } .app-nav a { min-height: 44px; } .header-actions { margin-left: auto; } }
+@media (max-width: 700px) { .friends-layout { grid-template-columns: 1fr; } .play-choices, .practice-links { gap: 14px; } .welcome-main { padding-top: 30px; } .play-choice { padding: 24px; } .friends-title { align-items: flex-start; flex-wrap: wrap; } .lobby-setup, #onlineLobby.lobby-directory, .lobby-directory { padding: 20px; } }
+@media (max-width: 520px) { .play-choices, .practice-links { grid-template-columns: 1fr; } .play-choice h2 br { display: none; } .play-choice h2 { font-size: 32px; margin: 18px 0 12px; } .play-choice h2 br::after { content: ' '; } .play-choice p { margin-bottom: 16px; } .choice-action { margin-top: 18px; padding-top: 14px; } .app-header { padding-inline: 16px; } .app-nav { gap: 0 20px; } .app-nav a { font-size: 14px; } }

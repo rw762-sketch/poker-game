@@ -1,3 +1,5 @@
+// Serve the game with server/index.mjs, or set an HTTPS API base for a separate server.
+export const MULTIPLAYER_API_URL = '/api';
 // Public browser configuration only. Never put a provider account/API secret here.
 // Configure a HTTPS endpoint returning short-lived RTCIceServer[] credentials.
 // The endpoint must allow this site's origin (CORS) and return Cache-Control: no-store.

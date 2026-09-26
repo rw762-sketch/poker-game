@@ -1,5 +1,6 @@
-import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=8b385c1c879f';
-import { boardTexture } from './strategy.js?v=8b385c1c879f';
+import { inferOpponentRanges } from './range-model.js?v=e95c98b86ca5';
+import { preflopStrength, rankHand, simulateEquity } from './poker-math.js?v=e95c98b86ca5';
+import { boardTexture } from './strategy.js?v=e95c98b86ca5';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const deck=Array.from({length:52},(_,i)=>({r:2+i%13,s:Math.floor(i/13)}));
 const key=c=>c.s*13+c.r;
@@ -88,7 +89,9 @@ export function gtoDecision(obs,random=Math.random,trials=600) {
     if(o.canRaise&&roll<frequency)return done({action:'raise',amount:Math.min(o.max,Math.max(o.min,(obs.bigBlind||20)*(obs.position==='late'?2.5:3)))},`Position-based opening mix: raise ${Math.round(frequency*100)}% of the time with this hand class.`);
     return done(o.owed?fold:call,o.owed?'This hand falls outside the selected opening mix.':'Take the free check outside the opening mix.');
   }
-  const simulation=simulateEquity(obs,trials,random),equity=simulation.equity;
+  const inferred=inferOpponentRanges(obs);
+  const simulation=simulateEquity(inferred,trials,random),equity=simulation.equity;
+  analysis.weightedRangeCombinations=inferred.weightedRanges?.map(range=>range.length)||[];
   analysis.equity=equity;analysis.trials=simulation.trials;
   const terminal=obs.board.length===5||o.call>=obs.stack||obs.effectiveStack===0;
   const usable=equity*(terminal?1:obs.position==='late'?.98:obs.opponents>1?.85:.92);

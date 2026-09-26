@@ -1,0 +1,8 @@
+{
+  "hands": 30000,
+  "actions": 351544,
+  "seedStart": 6600000,
+  "seedMix": "32-bit avalanche",
+  "method": "Smoothed action-likelihood counts from six synthetic playing styles. No human histories.",
+  "elapsedSeconds": 4.241
+}

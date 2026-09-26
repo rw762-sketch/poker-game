@@ -1,0 +1,85 @@
+{
+  "seedMix": "32-bit avalanche",
+  "decisions": 8000,
+  "seedStart": 5500000,
+  "productionRollouts": 600,
+  "results": [
+    {
+      "name": "live-draw",
+      "decisions": 1000,
+      "raises": 189,
+      "folds": 0,
+      "bluffs": 189,
+      "expectedRaises": 190.52014740507315,
+      "mixingResidualStandardErrors": -0.12684352155193773
+    },
+    {
+      "name": "weak-river",
+      "decisions": 1000,
+      "raises": 216,
+      "folds": 0,
+      "bluffs": 216,
+      "expectedRaises": 225.59847198641614,
+      "mixingResidualStandardErrors": -0.7280844971068269
+    },
+    {
+      "name": "ace-blocker-river",
+      "decisions": 1000,
+      "raises": 353,
+      "folds": 0,
+      "bluffs": 353,
+      "expectedRaises": 342.95740052345354,
+      "mixingResidualStandardErrors": 0.6720359897850311
+    },
+    {
+      "name": "nuts-mixed-value",
+      "decisions": 1000,
+      "raises": 846,
+      "folds": 0,
+      "bluffs": 0,
+      "expectedRaises": 820.0000000000151,
+      "mixingResidualStandardErrors": 2.140080792739535
+    },
+    {
+      "name": "multiway-draw",
+      "decisions": 1000,
+      "raises": 0,
+      "folds": 0,
+      "bluffs": 0,
+      "expectedRaises": 0,
+      "mixingResidualStandardErrors": 0
+    },
+    {
+      "name": "opponent-all-in",
+      "decisions": 1000,
+      "raises": 0,
+      "folds": 0,
+      "bluffs": 0,
+      "expectedRaises": 0,
+      "mixingResidualStandardErrors": 0
+    },
+    {
+      "name": "board-tie",
+      "decisions": 1000,
+      "raises": 0,
+      "folds": 0,
+      "bluffs": 0,
+      "expectedRaises": 0,
+      "mixingResidualStandardErrors": 0
+    },
+    {
+      "name": "draw-facing-bet",
+      "decisions": 1000,
+      "raises": 77,
+      "folds": 0,
+      "bluffs": 77,
+      "expectedRaises": 83.82103512270007,
+      "mixingResidualStandardErrors": -0.7877478547571816
+    }
+  ],
+  "failures": 0,
+  "elapsedSeconds": 29.643,
+  "limitations": [
+    "Constructed scenarios; action-frequency consistency does not establish GTO optimality."
+  ]
+}

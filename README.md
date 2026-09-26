@@ -1,6 +1,6 @@
 # Ryan’s Online Poker
 
-A Texas Hold’em browser game with solo play against three computer opponents and online rooms for 2–4 friends. Includes rotating blinds, betting rounds, all-ins, side pots, ties, and best-five-of-seven hand evaluation. Play chips only. State lasts for the current page session.
+A Texas Hold’em browser game with solo play against three computer opponents and online rooms for 2–4 friends. Includes rotating blinds, betting rounds, all-ins, side pots, ties, and best-five-of-seven hand evaluation. Play chips only. Solo state lasts for the current page session; server rooms can be resumed in the same tab.
 
 Run locally with `python3 -m http.server 4173`, then open http://localhost:4173.
 
@@ -16,7 +16,27 @@ Game URL: https://rw762-sketch.github.io/ryan-poker-online/
 
 GitHub `main` contains the contents of local `dist/` at its root, plus a public README and `.nojekyll`. Pages deploys from `main` / root. The local `github` remote identifies this publication repository; its history is separate from this local source repository. Publish subsequent changes by updating the corresponding root files on GitHub. Do not force-push the local source branch over it.
 
-## Online multiplayer
+## Opening screen and pages
+
+The root `index.html` opens a mode selection screen. **Play with friends** leads to `friends.html`, a dedicated lobby with online players, open tables, and create/join controls. **Solo practice** leads to `play.html`. Calculator and AI Arena remain accessible from the main navigation.
+
+Multiplayer games stay on the friends page. **Online lobby** and **Back to your table** switch views without unloading the connection, and leaving a room returns to the lobby. Previously shared root invite links redirect to the friends page with their room code and connection mode preserved. The home screen does not start a solo game or announce a player online.
+
+## Server multiplayer and online lobby
+
+Run `node server/index.mjs` with Node 22 or newer, then open http://localhost:4173. This serves both the game and its multiplayer API with no third-party packages. `PORT` and `HOST` configure the listener. Keep one server process running; state is held in its memory, so restarts clear rooms. This is a small friends-game service, not a horizontally scaled backend.
+
+**Play with friends → Enter lobby** shows everyone currently connected to this server, their lobby/table status, and tables with open seats. Names become visible when players enter the lobby or a server room. Presence refreshes every 5 seconds in the lobby and every second at a table; inactive players disappear after 30 seconds. Direct-mode players and unnamed solo players are not in this directory. Tables are public within this server.
+
+Server mode uses HTTP polling (HTTPS in production) and does not contact PeerJS or STUN/TURN services. The server owns the deck, validates actions, and sends each player only their permitted card view. The host still controls dealing but can refresh and return in the same tab. Temporary outages reconnect automatically with bounded backoff. Retried mutations have unique IDs so a lost response does not apply a move twice. A seat can be recovered within 30 minutes of inactivity while this server remains running; hands keep their 45-second turn clock, and disconnected players may time out. Explicitly leaving as host closes the room for everyone.
+
+For public use, run this server behind HTTPS and share that server's game URL with everyone. The existing GitHub Pages/static Sites publication cannot run `server/index.mjs`; these changes have **not** deployed a public game server. A static frontend can use a separate API by setting `MULTIPLAYER_API_URL` in `network-config.js` to its `https://…/api` address and setting the server's `ALLOWED_ORIGINS` to a comma-separated list of exact frontend origins. Never put session credentials in invite links. Both players must use the same server and connection mode. Invite links preserve that mode.
+
+The server transport avoids direct peer-connectivity requirements, but no mainland-China reachability or latency guarantee has been established. The chosen game/API hostname and route must be tested from the friend's actual network. No paid service or external account was created.
+
+Validation: `node --test tests/server.test.mjs tests/network.test.mjs tests/multiplayer.test.mjs` includes four clients against a real local HTTP listener, private-card isolation, lost-response retries, presence expiry, host recovery, room limits, and origin checks. These are local protocol tests, not a China-to-host network test.
+
+## Direct online multiplayer (legacy option)
 
 Use **Play with friends** to create or join an 8-character room. Share the invite link, wait for 2–4 players, and let the host deal. Solo play remains available.
 
@@ -48,7 +68,7 @@ Simulation runs in a Web Worker and can be canceled. Duplicate cards and inconsi
 
 ## Reproducible sample-game training
 
-Run `node scripts/train-ai.mjs` from the repository root. The script searches seven strategy parameters across **5,760 complete simulated games**, then freezes the result and compares it with the previous Hard policy on **1,600 separate held-out deals per policy**. Opponents mix calling, old-policy, and positional strategies. This is parameter tuning on synthetic games, not neural-network training or human hand-history learning.
+Run `node scripts/train-ai.mjs` from this local source checkout. The script searches seven strategy parameters across **5,760 complete simulated games**, then freezes the result and compares it with the previous Hard policy on **1,600 separate held-out deals per policy**. Opponents mix calling, old-policy, and positional strategies. This is parameter tuning on synthetic games, not neural-network training or human hand-history learning.
 
 The original sample-game policy run (before the later adaptive-memory layer) earned **2.427 big blinds per hand** against that synthetic opponent mix, versus **1.048** for the old policy. The paired improvement was **1.379 BB/hand**, with an approximate 95% interval of **0.505–2.252**. These benchmark results do not establish performance against human players. See `training/report.json` for the full report and `training/sample-games.json` for 12 complete example action traces.
 

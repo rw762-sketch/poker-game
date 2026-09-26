@@ -1,0 +1,47 @@
+{
+  "heldoutHands": 10000,
+  "heldoutActions": 116850,
+  "predictions": 2903,
+  "seedStart": 7700000,
+  "trainingSeedStart": 6600000,
+  "seedSetsDisjoint": true,
+  "meanLearnedLogLoss": 6.921575896449997,
+  "meanCoarseLogLoss": 7.430200493920929,
+  "meanUniformLogLoss": 6.98564181763896,
+  "learnedMinusCoarse": {
+    "mean": -0.5086245974707818,
+    "interval95": [
+      -0.5530511206876741,
+      -0.4641980742538895
+    ]
+  },
+  "learnedMinusUniform": {
+    "mean": -0.0640659211892087,
+    "interval95": [
+      -0.073792294987147,
+      -0.054339547391270414
+    ]
+  },
+  "top20Coverage": 0.27648869484089755,
+  "byStreet": [
+    {
+      "street": 1,
+      "predictions": 2903
+    },
+    {
+      "street": 2,
+      "predictions": 0
+    },
+    {
+      "street": 3,
+      "predictions": 0
+    }
+  ],
+  "elapsedSeconds": 7.645,
+  "limitations": [
+    "Synthetic styles used for training; disjoint deals, not unseen human behavior.",
+    "Offline hidden cards are used only as scoring labels; inference receives own cards and public events.",
+    "Holding prediction gains do not prove poker win-rate improvement or GTO optimality.",
+    "Coarse baseline retains 10% uniform uncertainty mass for a finite, fairer log-loss comparison."
+  ]
+}
