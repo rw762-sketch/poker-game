@@ -34,7 +34,11 @@ export function decode(payload, now = Date.now) {
 // A bounded friends lobby uses one atomic snapshot. Compare-and-swap prevents
 // concurrent requests or separate Worker instances from overwriting each other.
 export async function storedRequest(database, path, token, body, now = Date.now, hooks = {}) {
-  if (path === '/health') return { ok: true, protocol: 1, storage: 'shared' };
+  if (path === '/health') {
+    const db = database.withSession ? database.withSession('first-primary') : database;
+    await db.prepare('SELECT revision FROM poker_state WHERE id = 1').first();
+    return { ok: true, protocol: 1, storage: 'shared' };
+  }
   return updateStored(database, service => {
     for (const room of service.rooms.values()) room.table.apiBots = !!hooks.apiEnabled;
     service.sweep();

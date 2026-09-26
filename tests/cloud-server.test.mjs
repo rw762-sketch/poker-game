@@ -58,4 +58,6 @@ test('cloud endpoint validates storage health, origins, identity, methods and bo
   assert.equal((await req('/session', { method: 'POST', body: 'x'.repeat(4097) })).status, 413);
   assert.equal((await req('/session', { method: 'POST', body: 'null' })).status, 400);
   assert.equal((await api(new Request('https://game.example/api/health'), {})).status, 503);
+  const brokenDB = { prepare() { throw Error('D1 database unavailable'); } };
+  assert.equal((await api(new Request('https://game.example/api/health'), { DB: brokenDB })).status, 503);
 });
